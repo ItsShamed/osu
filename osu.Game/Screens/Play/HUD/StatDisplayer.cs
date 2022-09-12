@@ -86,7 +86,7 @@ namespace osu.Game.Screens.Play.HUD
         protected override void LoadComplete()
         {
             base.LoadComplete();
-            FloatingPoints.BindValueChanged(e => SetCountWithoutRolling(Current.Value));
+            FloatingPoints.BindValueChanged(e => UpdateDisplay());
         }
 
         private double getValueFromStat(Stat stat)
