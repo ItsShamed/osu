@@ -17,7 +17,6 @@ using osu.Framework.Extensions;
 using osu.Framework.Graphics.Textures;
 using osu.Framework.Localisation;
 using osu.Game.Beatmaps;
-using osu.Game.Graphics;
 using osu.Game.Graphics.UserInterface;
 using osu.Game.Rulesets;
 using osu.Game.Rulesets.Difficulty;
@@ -63,10 +62,8 @@ namespace osu.Game.Screens.Play.HUD
         private Mod[] clonedMods;
 
         [BackgroundDependencyLoader]
-        private void load(OsuColour colours, BeatmapDifficultyCache difficultyCache)
+        private void load(BeatmapDifficultyCache difficultyCache)
         {
-            Colour = colours.BlueLighter;
-
             if (gameplayState != null)
             {
                 performanceCalculator = gameplayState.Ruleset.CreatePerformanceCalculator();

@@ -45,7 +45,7 @@ namespace osu.Game.Screens.Play
         public readonly PlayerSettingsOverlay PlayerSettingsOverlay;
 
         [Cached]
-        private readonly ClicksPerSecondCalculator clicksPerSecondCalculator;
+        private readonly GameplayClicksPerSecondCounter counter;
 
         public Bindable<bool> ShowHealthBar = new Bindable<bool>(true);
 
@@ -134,7 +134,7 @@ namespace osu.Game.Screens.Play
                     Padding = new MarginPadding(44), // enough margin to avoid the hit error display
                     Spacing = new Vector2(5)
                 },
-                clicksPerSecondCalculator = new ClicksPerSecondCalculator(),
+                counter = new GameplayClicksPerSecondCounter(),
             };
 
             hideTargets = new List<Drawable> { mainComponents, KeyCounter, topRightElements };
@@ -298,7 +298,7 @@ namespace osu.Game.Screens.Play
             if (drawableRuleset is ICanAttachHUDPieces attachTarget)
             {
                 attachTarget.Attach(KeyCounter);
-                attachTarget.Attach(clicksPerSecondCalculator);
+                attachTarget.Attach(counter);
             }
 
             replayLoaded.BindTo(drawableRuleset.HasReplayLoaded);

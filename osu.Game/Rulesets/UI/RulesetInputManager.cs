@@ -189,25 +189,25 @@ namespace osu.Game.Rulesets.UI
 
         #region Keys per second Counter Attachment
 
-        public void Attach(ClicksPerSecondCalculator calculator)
+        public void Attach(GameplayClicksPerSecondCounter counter)
         {
-            var listener = new ActionListener(calculator);
+            var listener = new ActionListener(counter);
 
             KeyBindingContainer.Add(listener);
         }
 
         private class ActionListener : Component, IKeyBindingHandler<T>
         {
-            private readonly ClicksPerSecondCalculator calculator;
+            private readonly GameplayClicksPerSecondCounter counter;
 
-            public ActionListener(ClicksPerSecondCalculator calculator)
+            public ActionListener(GameplayClicksPerSecondCounter counter)
             {
-                this.calculator = calculator;
+                this.counter = counter;
             }
 
             public bool OnPressed(KeyBindingPressEvent<T> e)
             {
-                calculator.AddInputTimestamp();
+                counter.AddInputTimestamp();
                 return false;
             }
 
@@ -259,7 +259,7 @@ namespace osu.Game.Rulesets.UI
     public interface ICanAttachHUDPieces
     {
         void Attach(KeyCounterDisplay keyCounter);
-        void Attach(ClicksPerSecondCalculator calculator);
+        void Attach(GameplayClicksPerSecondCounter counter);
     }
 
     public class RulesetInputManagerInputState<T> : InputState

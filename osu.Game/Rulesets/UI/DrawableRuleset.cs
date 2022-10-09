@@ -341,8 +341,8 @@ namespace osu.Game.Rulesets.UI
         public void Attach(KeyCounterDisplay keyCounter) =>
             (KeyBindingInputManager as ICanAttachHUDPieces)?.Attach(keyCounter);
 
-        public void Attach(ClicksPerSecondCalculator calculator) =>
-            (KeyBindingInputManager as ICanAttachHUDPieces)?.Attach(calculator);
+        public void Attach(GameplayClicksPerSecondCounter counter) =>
+            (KeyBindingInputManager as ICanAttachHUDPieces)?.Attach(counter);
 
         /// <summary>
         /// Creates a key conversion input manager. An exception will be thrown if a valid <see cref="RulesetInputManager{T}"/> is not returned.
