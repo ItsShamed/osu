@@ -85,7 +85,7 @@ namespace osu.Game.Skinning
                                 var score = container.OfType<DefaultScoreCounter>().FirstOrDefault();
                                 var accuracy = container.OfType<DefaultAccuracyCounter>().FirstOrDefault();
                                 var combo = container.OfType<DefaultComboCounter>().FirstOrDefault();
-                                var ppCounter = container.OfType<PerformancePointsCounter>().FirstOrDefault();
+                                var ppCounter = container.OfType<DefaultPerformancePointsCounter>().FirstOrDefault();
 
                                 if (score != null)
                                 {
@@ -148,7 +148,7 @@ namespace osu.Game.Skinning
                                     new DefaultSongProgress(),
                                     new BarHitErrorMeter(),
                                     new BarHitErrorMeter(),
-                                    new PerformancePointsCounter()
+                                    new DefaultPerformancePointsCounter()
                                 }
                             };
 

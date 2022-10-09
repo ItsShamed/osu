@@ -20,19 +20,18 @@ using osuTK;
 
 namespace osu.Game.Screens.Play.HUD
 {
-    public class UnstableRateCounter : RollingCounter<int>, ISkinnableDrawable
+    public abstract class GameplayUnstableRateCounter : RollingCounter<int>, ISkinnableDrawable
     {
         public bool UsesFixedAnchor { get; set; }
 
         protected override double RollingDuration => 750;
 
-        private const float alpha_when_invalid = 0.3f;
-        private readonly Bindable<bool> valid = new Bindable<bool>();
+        protected readonly Bindable<bool> Valid = new BindableBool();
 
         [Resolved]
         private ScoreProcessor scoreProcessor { get; set; }
 
-        public UnstableRateCounter()
+        protected GameplayUnstableRateCounter()
         {
             Current.Value = 0;
         }
@@ -41,8 +40,6 @@ namespace osu.Game.Screens.Play.HUD
         private void load(OsuColour colours)
         {
             Colour = colours.BlueLighter;
-            valid.BindValueChanged(e =>
-                DrawableCount.FadeTo(e.NewValue ? 1 : alpha_when_invalid, 1000, Easing.OutQuint));
         }
 
         private bool changesUnstableRate(JudgementResult judgement)
@@ -63,15 +60,10 @@ namespace osu.Game.Screens.Play.HUD
         {
             double? unstableRate = scoreProcessor.HitEvents.CalculateUnstableRate();
 
-            valid.Value = unstableRate != null;
+            Valid.Value = unstableRate != null;
             if (unstableRate != null)
                 Current.Value = (int)Math.Round(unstableRate.Value);
         }
-
-        protected override IHasText CreateText() => new TextComponent
-        {
-            Alpha = alpha_when_invalid,
-        };
 
         protected override void Dispose(bool isDisposing)
         {

@@ -30,7 +30,7 @@ namespace osu.Game.Tests.Visual.Gameplay
 
         private int iteration;
         private Bindable<JudgementResult> lastJudgementResult = new Bindable<JudgementResult>();
-        private PerformancePointsCounter counter;
+        private GameplayPerformancePointsCounter counter;
 
         [SetUpSteps]
         public void SetUpSteps() => AddStep("create components", () =>
@@ -66,7 +66,7 @@ namespace osu.Game.Tests.Visual.Gameplay
 
         private void createCounter() => AddStep("Create counter", () =>
         {
-            dependencyContainer.Child = counter = new PerformancePointsCounter
+            dependencyContainer.Child = counter = new DefaultPerformancePointsCounter
             {
                 Anchor = Anchor.Centre,
                 Origin = Anchor.Centre,

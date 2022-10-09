@@ -106,7 +106,7 @@ namespace osu.Game.Tests.Skins
             {
                 var skin = new TestSkin(new SkinInfo(), null, storage);
                 Assert.That(skin.DrawableComponentInfo[SkinnableTarget.MainHUDComponents], Has.Length.EqualTo(8));
-                Assert.That(skin.DrawableComponentInfo[SkinnableTarget.MainHUDComponents].Select(i => i.Type), Contains.Item(typeof(UnstableRateCounter)));
+                Assert.That(skin.DrawableComponentInfo[SkinnableTarget.MainHUDComponents].Select(i => i.Type), Contains.Item(typeof(DefaultUnstableRateCounter)));
                 Assert.That(skin.DrawableComponentInfo[SkinnableTarget.MainHUDComponents].Select(i => i.Type), Contains.Item(typeof(ColourHitErrorMeter)));
                 Assert.That(skin.DrawableComponentInfo[SkinnableTarget.MainHUDComponents].Select(i => i.Type), Contains.Item(typeof(LegacySongProgress)));
             }

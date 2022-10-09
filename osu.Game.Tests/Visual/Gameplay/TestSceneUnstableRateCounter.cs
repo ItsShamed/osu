@@ -24,7 +24,7 @@ namespace osu.Game.Tests.Visual.Gameplay
 
         private readonly OsuHitWindows hitWindows = new OsuHitWindows();
 
-        private UnstableRateCounter counter;
+        private GameplayUnstableRateCounter counter;
 
         private double prev;
 
@@ -78,7 +78,7 @@ namespace osu.Game.Tests.Visual.Gameplay
         {
             Clear();
 
-            Add(counter = new UnstableRateCounter
+            Add(counter = new DefaultUnstableRateCounter
             {
                 Anchor = Anchor.Centre,
                 Origin = Anchor.Centre,
