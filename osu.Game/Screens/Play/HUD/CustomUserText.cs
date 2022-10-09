@@ -22,6 +22,18 @@ namespace osu.Game.Screens.Play.HUD
         [SettingSource(nameof(Text))]
         public Bindable<string> Text { get; set; } = new Bindable<string>("Sample text");
 
+        [SettingSource("Font Size")]
+        public Bindable<float> FontSize { get; set; } = new BindableFloat
+        {
+            Default = 40f,
+            MaxValue = 80f,
+            MinValue = 8f,
+            Precision = 1
+        };
+
+        [SettingSource("Font Weight")]
+        public Bindable<FontWeight> FontWeight { get; set; } = new Bindable<FontWeight>(Graphics.FontWeight.Regular);
+
         [Resolved]
         private GameplayState gameplayState { get; set; } = null!;
 
@@ -47,7 +59,7 @@ namespace osu.Game.Screens.Play.HUD
         {
             displayText = new OsuSpriteText
             {
-                Font = OsuFont.Torus.With(size: 40f),
+                Font = OsuFont.Default.With(size: 40f),
             };
             updateDisplay();
             Child = displayText;
@@ -62,13 +74,13 @@ namespace osu.Game.Screens.Play.HUD
             diff = gameplayState.Beatmap.BeatmapInfo.DifficultyName;
             player = gameplayState.Score.ScoreInfo.User.Username;
             mapper = gameplayState.Beatmap.Metadata.Author.Username;
-        }
 
-        protected override void Update()
-        {
-            base.Update();
-
+            displayText.Font = displayText.Font.With(size: FontSize.Value, weight: FontWeight.Value);
             updateDisplay();
+
+            Text.BindValueChanged(_ => updateDisplay());
+            FontSize.BindValueChanged(e => displayText.Font = displayText.Font.With(size: e.NewValue));
+            FontWeight.BindValueChanged(e => displayText.Font = displayText.Font.With(weight: e.NewValue));
         }
 
         private void updateDisplay()
@@ -94,6 +106,15 @@ namespace osu.Game.Screens.Play.HUD
 
             displayText.Text = currentText;
         }
+
+        private FontUsage getFontFromString(string name) => (name.ToLowerInvariant() switch
+        {
+            "Torus" => OsuFont.Torus,
+            "Torus-Alternate" => OsuFont.TorusAlternate,
+            "Venera" => OsuFont.Numeric,
+            "Inter" => OsuFont.Inter,
+            _ => FontUsage.Default
+        }).With(size: FontSize.Value);
 
         public bool UsesFixedAnchor { get; set; }
     }
