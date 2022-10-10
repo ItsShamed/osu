@@ -3,17 +3,14 @@
 
 using System.Collections.Generic;
 using osu.Framework.Allocation;
-using osu.Game.Graphics.UserInterface;
+using osu.Framework.Graphics;
 using osu.Game.Rulesets.UI;
-using osu.Game.Skinning;
 
 namespace osu.Game.Screens.Play.HUD.ClicksPerSecond
 {
-    public class GameplayClicksPerSecondCounter : RollingCounter<int>, ISkinnableDrawable
+    public class ClicksPerSecondCalculator : Component
     {
         private readonly List<double> timestamps = new List<double>();
-
-        protected override double RollingDuration => 350;
 
         [Resolved]
         private IGameplayClock gameplayClock { get; set; } = null!;
@@ -21,15 +18,15 @@ namespace osu.Game.Screens.Play.HUD.ClicksPerSecond
         [Resolved(canBeNull: true)]
         private DrawableRuleset? drawableRuleset { get; set; }
 
-        // public int Value { get; private set; }
+        public int Value { get; private set; }
 
         // Even though `FrameStabilityContainer` caches as a `GameplayClock`, we need to check it directly via `drawableRuleset`
         // as this calculator is not contained within the `FrameStabilityContainer` and won't see the dependency.
         private IGameplayClock clock => drawableRuleset?.FrameStableClock ?? gameplayClock;
 
-        public GameplayClicksPerSecondCounter()
+        public ClicksPerSecondCalculator()
         {
-            Current.Value = 0;
+            RelativeSizeAxes = Axes.Both;
         }
 
         public void AddInputTimestamp() => timestamps.Add(clock.CurrentTime);
@@ -56,9 +53,7 @@ namespace osu.Game.Screens.Play.HUD.ClicksPerSecond
                     count++;
             }
 
-            Current.Value = count;
+            Value = count;
         }
-
-        public bool UsesFixedAnchor { get; set; }
     }
 }

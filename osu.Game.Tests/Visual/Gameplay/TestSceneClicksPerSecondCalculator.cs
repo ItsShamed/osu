@@ -17,7 +17,7 @@ namespace osu.Game.Tests.Visual.Gameplay
 {
     public class TestSceneClicksPerSecondCalculator : OsuTestScene
     {
-        private GameplayClicksPerSecondCounter counter = null!;
+        private ClicksPerSecondCalculator calculator = null!;
 
         private TestGameplayClock manualGameplayClock = null!;
 
@@ -34,12 +34,12 @@ namespace osu.Game.Tests.Visual.Gameplay
                     CachedDependencies = new (Type, object)[] { (typeof(IGameplayClock), manualGameplayClock) },
                     Children = new Drawable[]
                     {
-                        counter = new GameplayClicksPerSecondCounter(),
+                        calculator = new ClicksPerSecondCalculator(),
                         new DependencyProvidingContainer
                         {
                             RelativeSizeAxes = Axes.Both,
-                            CachedDependencies = new (Type, object)[] { (typeof(GameplayClicksPerSecondCounter), counter) },
-                            Child = new DefaultClicksPerSecondCounter
+                            CachedDependencies = new (Type, object)[] { (typeof(ClicksPerSecondCalculator), calculator) },
+                            Child = new ClicksPerSecondCounter
                             {
                                 Anchor = Anchor.Centre,
                                 Origin = Anchor.Centre,
@@ -81,7 +81,7 @@ namespace osu.Game.Tests.Visual.Gameplay
             checkClicksPerSecondValue(6);
         }
 
-        private void checkClicksPerSecondValue(int i) => AddAssert("clicks/s is correct", () => counter.Current.Value, () => Is.EqualTo(i));
+        private void checkClicksPerSecondValue(int i) => AddAssert("clicks/s is correct", () => calculator.Value, () => Is.EqualTo(i));
 
         private void seekClockImmediately(double time) => manualGameplayClock.CurrentTime = time;
 
@@ -94,7 +94,7 @@ namespace osu.Game.Tests.Visual.Gameplay
             foreach (double timestamp in inputs)
             {
                 seekClockImmediately(timestamp);
-                counter.AddInputTimestamp();
+                calculator.AddInputTimestamp();
             }
 
             seekClockImmediately(baseTime);
