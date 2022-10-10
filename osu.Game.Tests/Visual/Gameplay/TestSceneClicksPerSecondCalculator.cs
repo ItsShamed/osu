@@ -39,7 +39,7 @@ namespace osu.Game.Tests.Visual.Gameplay
                         {
                             RelativeSizeAxes = Axes.Both,
                             CachedDependencies = new (Type, object)[] { (typeof(ClicksPerSecondCalculator), calculator) },
-                            Child = new ClicksPerSecondCounter
+                            Child = new DefaultClicksPerSecondCounter
                             {
                                 Anchor = Anchor.Centre,
                                 Origin = Anchor.Centre,

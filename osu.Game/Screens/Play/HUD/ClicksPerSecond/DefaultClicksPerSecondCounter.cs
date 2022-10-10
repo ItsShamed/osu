@@ -8,37 +8,16 @@ using osu.Framework.Graphics.Sprites;
 using osu.Framework.Localisation;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Sprites;
-using osu.Game.Graphics.UserInterface;
-using osu.Game.Skinning;
 using osuTK;
 
 namespace osu.Game.Screens.Play.HUD.ClicksPerSecond
 {
-    public class ClicksPerSecondCounter : RollingCounter<int>, ISkinnableDrawable
+    public class DefaultClicksPerSecondCounter : GameplayClicksPerSecondCounter
     {
-        [Resolved]
-        private ClicksPerSecondCalculator calculator { get; set; } = null!;
-
-        protected override double RollingDuration => 350;
-
-        public bool UsesFixedAnchor { get; set; }
-
-        public ClicksPerSecondCounter()
-        {
-            Current.Value = 0;
-        }
-
         [BackgroundDependencyLoader]
         private void load(OsuColour colours)
         {
             Colour = colours.BlueLighter;
-        }
-
-        protected override void Update()
-        {
-            base.Update();
-
-            Current.Value = calculator.Value;
         }
 
         protected override IHasText CreateText() => new TextComponent();
