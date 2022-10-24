@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
+using osu.Framework.Timing;
 using osu.Game.Graphics;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.UI;
@@ -141,19 +142,18 @@ namespace osu.Game.Screens.Play.HUD
             Height = playfieldBar.Height + bar_height + info.Height;
             graph.Height = playfieldBar.Height;
 
-            if (drawableRuleset != null)
+            IClock referenceClock = drawableRuleset?.FrameStableClock ?? GameplayClock;
+
+            float timeDiff = (float)(GameplayClock.CurrentTime - referenceClock.CurrentTime);
+            ChangeChildDepth(catchupBar, MathHelper.Clamp(timeDiff, -1, 1));
+
+            double alphaThreshold = (LastHitTime - FirstHitTime) * 0.03;
+
+            catchupBar.Alpha = (float)(MathHelper.Clamp(MathF.Abs(timeDiff), 0, alphaThreshold) / alphaThreshold);
+
+            if (MathF.Abs(timeDiff) > 1f)
             {
-                float timeDiff = (float)(GameplayClock.CurrentTime - drawableRuleset.FrameStableClock.CurrentTime);
-                ChangeChildDepth(catchupBar, MathHelper.Clamp(timeDiff, -1, 1));
-
-                double alphaThreshold = (LastHitTime - FirstHitTime) * 0.03;
-
-                catchupBar.Alpha = (float)(MathHelper.Clamp(MathF.Abs(timeDiff), 0, alphaThreshold) / alphaThreshold);
-
-                if (MathF.Abs(timeDiff) > 1f)
-                {
-                    catchupBar.FillColour = seekColour;
-                }
+                catchupBar.FillColour = seekColour;
             }
         }
 
