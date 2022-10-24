@@ -15,8 +15,7 @@ namespace osu.Game.Screens.Play
 {
     public abstract class SegmentedGraph : Container
     {
-        private BufferedContainer? rectSegments = null;
-        private const float minimum_width = 2;
+        private BufferedContainer? rectSegments;
         private float previousDrawWidth;
         private bool graphNeedsUpdate;
         private int[]? values;
