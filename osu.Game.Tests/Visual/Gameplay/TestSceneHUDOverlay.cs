@@ -152,7 +152,7 @@ namespace osu.Game.Tests.Visual.Gameplay
         [Test]
         public void TestInputDoesntWorkWhenHUDHidden()
         {
-            SongProgressBar getSongProgress() => hudOverlay.ChildrenOfType<SongProgressBar>().Single();
+            DefaultSongProgressBar getSongProgress() => hudOverlay.ChildrenOfType<DefaultSongProgressBar>().Single();
 
             bool seeked = false;
 
