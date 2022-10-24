@@ -105,7 +105,10 @@ namespace osu.Game.Screens.Play
             int max = values.Max();
 
             Tier lastTier = Tier.None;
-            (Tier tier, float start, float end) currentSegment = (lastTier, 0f, 0f);
+            (Tier tier, float start, float end) lowSegment = (Tier.None, 0, 0);
+            (Tier tier, float start, float end) midSegment = (Tier.None, 0, 0);
+            (Tier tier, float start, float end) highSegment = (Tier.None, 0, 0);
+            (Tier tier, float start, float end) highestSegment = (Tier.None, 0, 0);
 
             for (int i = 0; i < length; i++)
             {
@@ -123,13 +126,67 @@ namespace osu.Game.Screens.Play
 
                 if (lastTier != currentTier)
                 {
-                    if (lastTier is not Tier.Lowest or Tier.None)
+                    if (currentTier == Tier.Highest)
+                        highestSegment = (currentTier, i / (length - 1f), 0);
+
+                    if (currentTier < Tier.Highest)
                     {
-                        currentSegment.end = i / (length - 1f);
-                        newValues.Add(currentSegment);
+                        if (highestSegment.tier != Tier.None)
+                        {
+                            highestSegment.end = i / (length - 1f);
+                            newValues.Add(highestSegment);
+                            highestSegment = (Tier.None, 0, 0);
+                        }
                     }
 
-                    currentSegment = (currentTier, i / (length - 1f), 0f);
+                    if (currentTier < Tier.High)
+                    {
+                        if (highSegment.tier != Tier.None)
+                        {
+                            highSegment.end = i / (length - 1f);
+                            newValues.Add(highSegment);
+                            highSegment = (Tier.None, 0, 0);
+                        }
+                    }
+
+                    if (currentTier < Tier.Mid)
+                    {
+                        if (midSegment.tier != Tier.None)
+                        {
+                            midSegment.end = i / (length - 1f);
+                            newValues.Add(midSegment);
+                            midSegment = (Tier.None, 0, 0);
+                        }
+                    }
+
+                    if (currentTier < Tier.Low)
+                    {
+                        if (lowSegment.tier != Tier.None)
+                        {
+                            lowSegment.end = i / (length - 1f);
+                            newValues.Add(midSegment);
+                            lowSegment = (Tier.None, 0, 0);
+                        }
+                    }
+
+                    switch (currentTier)
+                    {
+                        case Tier.Low:
+                            lowSegment = (currentTier, i / (length - 1f), 0);
+                            break;
+
+                        case Tier.Mid:
+                            midSegment = (currentTier, i / (length - 1f), 0);
+                            break;
+
+                        case Tier.High:
+                            highestSegment = (currentTier, i / (length - 1f), 0);
+                            break;
+
+                        case Tier.Highest:
+                            highestSegment = (currentTier, i / (length - 1f), 0);
+                            break;
+                    }
                 }
 
                 lastTier = currentTier;
@@ -181,12 +238,12 @@ namespace osu.Game.Screens.Play
 
         private enum Tier
         {
-            Lowest,
-            Low,
-            Mid,
-            High,
-            Highest,
-            None
+            Lowest = 0,
+            Low = 1,
+            Mid = 2,
+            High = 3,
+            Highest = 4,
+            None = -1
         }
     }
 }
