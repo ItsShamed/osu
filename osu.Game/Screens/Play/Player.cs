@@ -44,7 +44,7 @@ using osuTK.Graphics;
 namespace osu.Game.Screens.Play
 {
     [Cached]
-    public abstract class Player : ScreenWithBeatmapBackground, ISamplePlaybackDisabler, ILocalUserPlayInfo
+    public abstract partial class Player : ScreenWithBeatmapBackground, ISamplePlaybackDisabler, ILocalUserPlayInfo
     {
         /// <summary>
         /// The delay upon completion of the beatmap before displaying the results screen.
@@ -65,6 +65,8 @@ namespace osu.Game.Screens.Play
         public override float BackgroundParallaxAmount => 0.1f;
 
         public override bool HideOverlaysOnEnter => true;
+
+        public override bool HideMenuCursorOnNonMouseInput => true;
 
         protected override OverlayActivation InitialOverlayActivationMode => OverlayActivation.UserTriggered;
 

@@ -14,7 +14,7 @@ using osu.Framework.Graphics.Sprites;
 
 namespace osu.Game.Screens.Play.HUD
 {
-    public class SongProgressInfo : Container
+    public partial class SongProgressInfo : Container
     {
         private SizePreservingSpriteText timeCurrent;
         private SizePreservingSpriteText timeLeft;

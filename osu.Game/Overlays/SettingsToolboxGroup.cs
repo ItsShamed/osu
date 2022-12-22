@@ -20,7 +20,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Overlays
 {
-    public class SettingsToolboxGroup : Container, IExpandable
+    public partial class SettingsToolboxGroup : Container, IExpandable
     {
         private readonly string title;
         public const int CONTAINER_WIDTH = 270;
@@ -40,8 +40,6 @@ namespace osu.Game.Overlays
             Anchor = Anchor.TopCentre,
             Direction = FillDirection.Vertical,
             RelativeSizeAxes = Axes.X,
-            AutoSizeDuration = transition_duration,
-            AutoSizeEasing = Easing.OutQuint,
             AutoSizeAxes = Axes.Y,
             Padding = new MarginPadding { Horizontal = 10, Top = 5, Bottom = 10 },
             Spacing = new Vector2(0, 15),
