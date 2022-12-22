@@ -11,7 +11,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Screens.Play.HUD
 {
-    public class ArgonSongProgressBar : SongProgressBar
+    public partial class ArgonSongProgressBar : SongProgressBar
     {
         protected override Drawable Fill { get; set; }
 

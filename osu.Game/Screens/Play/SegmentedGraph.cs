@@ -13,7 +13,7 @@ using osuTK;
 
 namespace osu.Game.Screens.Play
 {
-    public abstract class SegmentedGraph : Container
+    public abstract partial class SegmentedGraph : Container
     {
         private BufferedContainer? rectSegments;
         private float previousDrawWidth;

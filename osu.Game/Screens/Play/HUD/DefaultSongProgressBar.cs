@@ -13,7 +13,7 @@ using osu.Framework.Utils;
 
 namespace osu.Game.Screens.Play.HUD
 {
-    public class DefaultSongProgressBar : SongProgressBar
+    public partial class DefaultSongProgressBar : SongProgressBar
     {
         protected override Drawable Fill { get; set; }
 

@@ -8,7 +8,7 @@ using osu.Game.Rulesets.Objects;
 
 namespace osu.Game.Screens.Play.HUD
 {
-    public class ArgonSongProgressGraph : SegmentedGraph
+    public partial class ArgonSongProgressGraph : SegmentedGraph
     {
         private IEnumerable<HitObject>? objects;
 

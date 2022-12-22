@@ -42,7 +42,7 @@ namespace osu.Game.Tests.Skins
             // Covers longest combo counter
             "Archives/modified-default-20221012.osk",
             // Covers Argon variant of song progress bar
-            "Archives/modified-argon-20221024.osk"
+            "Archives/modified-argon-20221024.osk",
             // Covers TextElement and BeatmapInfoDrawable
             "Archives/modified-default-20221102.osk"
         };

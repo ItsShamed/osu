@@ -9,7 +9,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Screens.Play.HUD
 {
-    public partial class SongProgressBar : SliderBar<double>
+    public abstract partial class SongProgressBar : SliderBar<double>
     {
         public Action<double>? OnSeek;
 

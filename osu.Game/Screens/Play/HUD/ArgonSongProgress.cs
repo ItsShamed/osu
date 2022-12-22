@@ -15,7 +15,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Screens.Play.HUD
 {
-    public class ArgonSongProgress : SongProgress
+    public partial class ArgonSongProgress : SongProgress
     {
         private readonly ArgonSongProgressBar playfieldBar; // Tracking playfield's clock
         private readonly ArgonSongProgressBar catchupBar; // Tracking Track clock
