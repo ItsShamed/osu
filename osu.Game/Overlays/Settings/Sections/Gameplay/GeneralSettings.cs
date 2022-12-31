@@ -36,7 +36,7 @@ namespace osu.Game.Overlays.Settings.Sections.Gameplay
                 new SettingsCheckbox
                 {
                     LabelText = "Kiai Flashes",
-                    Current = config.GetBindable<bool>(OsuSetting.KiaiFlashes)
+                    Current = config.GetBindable<bool>(OsuSetting.KiaiEffects)
                 },
             };
         }

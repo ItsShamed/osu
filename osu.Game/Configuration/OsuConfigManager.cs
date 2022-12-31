@@ -179,7 +179,7 @@ namespace osu.Game.Configuration
 
             SetDefault(OsuSetting.ComboColourNormalisationAmount, 0.2f, 0f, 1f, 0.01f);
 
-            SetDefault(OsuSetting.KiaiFlashes, true);
+            SetDefault(OsuSetting.KiaiEffects, true);
         }
 
         protected override bool CheckLookupContainsPrivateInformation(OsuSetting lookup)
@@ -377,6 +377,6 @@ namespace osu.Game.Configuration
         LastProcessedMetadataId,
         SafeAreaConsiderations,
         ComboColourNormalisationAmount,
-        KiaiFlashes
+        KiaiEffects
     }
 }

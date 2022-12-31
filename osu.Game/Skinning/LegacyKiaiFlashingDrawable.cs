@@ -43,7 +43,7 @@ namespace osu.Game.Skinning
 
         protected override void OnNewBeat(int beatIndex, TimingControlPoint timingPoint, EffectControlPoint effectPoint, ChannelAmplitudes amplitudes)
         {
-            if (!effectPoint.KiaiMode || !config.Get<bool>(OsuSetting.KiaiFlashes))
+            if (!effectPoint.KiaiMode || !config.Get<bool>(OsuSetting.KiaiEffects))
                 return;
 
             flashingDrawable
