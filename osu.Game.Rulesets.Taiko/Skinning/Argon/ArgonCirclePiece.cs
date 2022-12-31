@@ -7,6 +7,7 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Colour;
 using osu.Framework.Graphics.Shapes;
 using osu.Game.Beatmaps.ControlPoints;
+using osu.Game.Configuration;
 using osu.Game.Graphics.Containers;
 using osu.Game.Rulesets.Objects.Drawables;
 using osu.Game.Rulesets.Taiko.Objects;
@@ -21,6 +22,9 @@ namespace osu.Game.Rulesets.Taiko.Skinning.Argon
         private const double pre_beat_transition_time = 80;
 
         private const float flash_opacity = 0.3f;
+
+        [Resolved]
+        private OsuConfigManager config { get; set; } = null!;
 
         private ColourInfo accentColour;
 
@@ -101,7 +105,7 @@ namespace osu.Game.Rulesets.Taiko.Skinning.Argon
 
         protected override void OnNewBeat(int beatIndex, TimingControlPoint timingPoint, EffectControlPoint effectPoint, ChannelAmplitudes amplitudes)
         {
-            if (!effectPoint.KiaiMode)
+            if (!effectPoint.KiaiMode || !config.Get<bool>(OsuSetting.KiaiEffects))
                 return;
 
             if (drawableHitObject.State.Value == ArmedState.Idle)

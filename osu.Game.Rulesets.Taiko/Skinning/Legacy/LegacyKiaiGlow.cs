@@ -7,6 +7,7 @@ using osu.Framework.Audio.Track;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Sprites;
 using osu.Game.Beatmaps.ControlPoints;
+using osu.Game.Configuration;
 using osu.Game.Graphics.Containers;
 using osu.Game.Rulesets.Judgements;
 using osu.Game.Rulesets.Scoring;
@@ -20,6 +21,9 @@ namespace osu.Game.Rulesets.Taiko.Skinning.Legacy
         private bool isKiaiActive;
 
         private Sprite sprite = null!;
+
+        [Resolved]
+        private OsuConfigManager config { get; set; } = null!;
 
         [BackgroundDependencyLoader(true)]
         private void load(ISkinSource skin, HealthProcessor? healthProcessor)
@@ -50,7 +54,7 @@ namespace osu.Game.Rulesets.Taiko.Skinning.Legacy
 
         protected override void OnNewBeat(int beatIndex, TimingControlPoint timingPoint, EffectControlPoint effectPoint, ChannelAmplitudes amplitudes)
         {
-            isKiaiActive = effectPoint.KiaiMode;
+            isKiaiActive = effectPoint.KiaiMode && config.Get<bool>(OsuSetting.KiaiEffects);
         }
 
         private void onNewJudgement(JudgementResult result)

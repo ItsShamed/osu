@@ -2,10 +2,12 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using osu.Framework.Allocation;
 using osu.Framework.Audio.Track;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Shapes;
 using osu.Game.Beatmaps.ControlPoints;
+using osu.Game.Configuration;
 using osu.Game.Graphics.Containers;
 using osuTK.Graphics;
 
@@ -16,6 +18,9 @@ namespace osu.Game.Rulesets.Osu.Skinning.Default
         private const double fade_length = 80;
 
         private const float flash_opacity = 0.25f;
+
+        [Resolved]
+        private OsuConfigManager config { get; set; } = null!;
 
         public KiaiFlash()
         {
@@ -32,7 +37,7 @@ namespace osu.Game.Rulesets.Osu.Skinning.Default
 
         protected override void OnNewBeat(int beatIndex, TimingControlPoint timingPoint, EffectControlPoint effectPoint, ChannelAmplitudes amplitudes)
         {
-            if (!effectPoint.KiaiMode)
+            if (!effectPoint.KiaiMode || !config.Get<bool>(OsuSetting.KiaiEffects))
                 return;
 
             Child

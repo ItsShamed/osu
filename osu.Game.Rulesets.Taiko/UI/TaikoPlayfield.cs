@@ -12,6 +12,7 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Pooling;
 using osu.Framework.Graphics.Primitives;
+using osu.Game.Configuration;
 using osu.Game.Graphics;
 using osu.Game.Rulesets.Objects.Drawables;
 using osu.Game.Rulesets.Judgements;
@@ -63,6 +64,9 @@ namespace osu.Game.Rulesets.Taiko.UI
         private Container barLineContent;
         private Container hitObjectContent;
         private Container overlayContent;
+
+        [Resolved]
+        private OsuConfigManager config { get; set; }
 
         [BackgroundDependencyLoader]
         private void load(OsuColour colours)
@@ -342,7 +346,7 @@ namespace osu.Game.Rulesets.Taiko.UI
         {
             hitExplosionContainer.Add(explosionPools[result]
                 .Get(explosion => explosion.Apply(drawableObject)));
-            if (drawableObject.HitObject.Kiai)
+            if (drawableObject.HitObject.Kiai && config.Get<bool>(OsuSetting.KiaiEffects))
                 kiaiExplosionContainer.Add(new KiaiHitExplosion(drawableObject, type));
         }
 
