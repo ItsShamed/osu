@@ -110,6 +110,11 @@ namespace osu.Game.Localisation
         public static LocalisableString HitLighting => new TranslatableString(getKey(@"hit_lighting"), @"Hit lighting");
 
         /// <summary>
+        /// "Special effects during Kiai sections"
+        /// </summary>
+        public static LocalisableString KiaiEffects => new TranslatableString(getKey(@"kiai_effects"), @"Special effects during Kiai sections");
+
+        /// <summary>
         /// "Screenshots"
         /// </summary>
         public static LocalisableString Screenshots => new TranslatableString(getKey(@"screenshots"), @"Screenshots");
