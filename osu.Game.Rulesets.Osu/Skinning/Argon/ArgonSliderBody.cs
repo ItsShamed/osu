@@ -33,7 +33,9 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
                 if (CalculatedBorderPortion != 0f && position <= CalculatedBorderPortion)
                     return BorderColour;
 
-                return AccentColour.Darken(4);
+                return AccentColour
+                       .Darken(4)
+                       .Opacity(0.75f);
             }
         }
     }
