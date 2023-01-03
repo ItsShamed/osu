@@ -62,9 +62,9 @@ namespace osu.Game.Screens.Play.HUD
         {
             if (ShowHandle || AllowHover)
             {
-                this.ResizeHeightTo(baseHeight * 2, 200, Easing.In);
-                Fill.ResizeHeightTo(baseHeight * 2, 200, Easing.In);
-                fillMask.ResizeHeightTo(baseHeight * 2, 200, Easing.In);
+                this.ResizeHeightTo(baseHeight * 2.5f, 200, Easing.In);
+                Fill.ResizeHeightTo(baseHeight * 2.5f, 200, Easing.In);
+                fillMask.ResizeHeightTo(baseHeight * 2.5f, 200, Easing.In);
             }
 
             return base.OnHover(e);

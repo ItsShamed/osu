@@ -55,14 +55,8 @@ namespace osu.Game.Screens.Play.HUD
                     Origin = Anchor.BottomLeft,
                     Anchor = Anchor.BottomLeft,
                     RelativeSizeAxes = Axes.X,
-                    Alpha = 0.5f,
                     Masking = true,
                     CornerRadius = 5,
-                    LowestSegmentColour = Colour4.FromHex("#333333"),
-                    LowSegmentColour = Colour4.FromHex("#4F4F4F"),
-                    MidSegmentColour = Colour4.FromHex("#828282"),
-                    HighSegmentColour = Colour4.FromHex("#BDBDBD"),
-                    HighestSegmentColour = Colour4.FromHex("#E0E0E0"),
                     Depth = 2
                 },
                 playfieldBar = new ArgonSongProgressBar(bar_height)

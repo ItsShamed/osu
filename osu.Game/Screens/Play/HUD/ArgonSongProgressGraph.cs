@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using osu.Framework.Graphics;
 using osu.Game.Rulesets.Objects;
 
 namespace osu.Game.Screens.Play.HUD
@@ -18,8 +19,8 @@ namespace osu.Game.Screens.Play.HUD
             {
                 objects = value;
 
-                const int granularity = 200;
-                Values = new int[granularity];
+                const int granularity = 300;
+                int[] values = new int[granularity];
 
                 if (!objects.Any())
                     return;
@@ -41,8 +42,19 @@ namespace osu.Game.Screens.Play.HUD
                     int startRange = (int)((h.StartTime - firstHit) / interval);
                     int endRange = (int)((endTime - firstHit) / interval);
                     for (int i = startRange; i <= endRange; i++)
-                        Values[i]++;
+                        values[i]++;
                 }
+
+                Values = values;
+            }
+        }
+
+        public ArgonSongProgressGraph()
+            : base(5)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                TierColours[i] = Colour4.White.Opacity(1 / 5f * 0.85f);
             }
         }
     }

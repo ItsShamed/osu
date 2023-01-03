@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -19,6 +20,18 @@ namespace osu.Game.Screens.Play
         private float previousDrawWidth;
         private bool graphNeedsUpdate;
         private int[]? values;
+        private float[] normalizedValues = Array.Empty<float>();
+        private int[] tiers = Array.Empty<int>();
+        private readonly SegmentManager segments;
+
+        private readonly int tierCount;
+
+        protected SegmentedGraph(int tierCount)
+        {
+            this.tierCount = tierCount;
+            TierColours = new Colour4[tierCount];
+            segments = new SegmentManager(tierCount);
+        }
 
         public int[] Values
         {
@@ -28,17 +41,19 @@ namespace osu.Game.Screens.Play
                 if (value == values) return;
 
                 values = value;
+                normalizedValues = normalizeValues(values);
+                recalculateTiers();
                 graphNeedsUpdate = true;
             }
         }
+
+        public readonly Colour4[] TierColours;
 
         public Colour4 LowestSegmentColour { get; set; }
         public Colour4 LowSegmentColour { get; set; }
         public Colour4 MidSegmentColour { get; set; }
         public Colour4 HighSegmentColour { get; set; }
         public Colour4 HighestSegmentColour { get; set; }
-
-        private (Tier tier, float start, float end)[] normalizedSegments = Array.Empty<(Tier, float, float)>();
 
         private CancellationTokenSource? cts;
         private ScheduledDelegate? scheduledCreate;
@@ -75,14 +90,6 @@ namespace osu.Game.Screens.Play
             {
                 Children = new Drawable[]
                 {
-                    new Box
-                    {
-                        Name = "Background",
-                        RelativeSizeAxes = Axes.Both,
-                        Origin = Anchor.BottomLeft,
-                        Anchor = Anchor.BottomLeft,
-                        Colour = LowestSegmentColour
-                    },
                     rectSegments = s
                 };
 
@@ -90,159 +97,218 @@ namespace osu.Game.Screens.Play
             }, (cts = new CancellationTokenSource()).Token);
         }
 
-        private void recalculateSegments()
+        private float[] normalizeValues(int[] arr)
         {
-            if (values == null)
-            {
-                normalizedSegments = new (Tier tier, float start, float end)[] { (0, 0f, 1f) };
-                return;
-            }
+            if (arr.Length == 0)
+                return Array.Empty<float>();
 
-            var newValues = new List<(Tier tier, float start, float end)>();
-
-            int length = values.Length;
-            int max = values.Max();
-
-            Tier lastTier = Tier.None;
-            (Tier tier, float start, float end) lowSegment = (Tier.None, 0, 0);
-            (Tier tier, float start, float end) midSegment = (Tier.None, 0, 0);
-            (Tier tier, float start, float end) highSegment = (Tier.None, 0, 0);
-            (Tier tier, float start, float end) highestSegment = (Tier.None, 0, 0);
-
-            for (int i = 0; i < length; i++)
-            {
-                float normalizedValue = values[i] * 1f / max;
-
-                Tier currentTier = normalizedValue switch
-                {
-                    < 1f / 5 => Tier.Lowest,
-                    < 2f / 5 => Tier.Low,
-                    < 3f / 5 => Tier.Mid,
-                    < 4f / 5 => Tier.High,
-                    <= 1f => Tier.Highest,
-                    _ => Tier.None
-                };
-
-                if (lastTier != currentTier)
-                {
-                    if (currentTier == Tier.Highest)
-                        highestSegment = (currentTier, i / (length - 1f), 0);
-
-                    if (currentTier < Tier.Highest)
-                    {
-                        if (highestSegment.tier != Tier.None)
-                        {
-                            highestSegment.end = i / (length - 1f);
-                            newValues.Add(highestSegment);
-                            highestSegment = (Tier.None, 0, 0);
-                        }
-                    }
-
-                    if (currentTier < Tier.High)
-                    {
-                        if (highSegment.tier != Tier.None)
-                        {
-                            highSegment.end = i / (length - 1f);
-                            newValues.Add(highSegment);
-                            highSegment = (Tier.None, 0, 0);
-                        }
-                    }
-
-                    if (currentTier < Tier.Mid)
-                    {
-                        if (midSegment.tier != Tier.None)
-                        {
-                            midSegment.end = i / (length - 1f);
-                            newValues.Add(midSegment);
-                            midSegment = (Tier.None, 0, 0);
-                        }
-                    }
-
-                    if (currentTier < Tier.Low)
-                    {
-                        if (lowSegment.tier != Tier.None)
-                        {
-                            lowSegment.end = i / (length - 1f);
-                            newValues.Add(midSegment);
-                            lowSegment = (Tier.None, 0, 0);
-                        }
-                    }
-
-                    switch (currentTier)
-                    {
-                        case Tier.Low:
-                            lowSegment = (currentTier, i / (length - 1f), 0);
-                            break;
-
-                        case Tier.Mid:
-                            midSegment = (currentTier, i / (length - 1f), 0);
-                            break;
-
-                        case Tier.High:
-                            highestSegment = (currentTier, i / (length - 1f), 0);
-                            break;
-
-                        case Tier.Highest:
-                            highestSegment = (currentTier, i / (length - 1f), 0);
-                            break;
-                    }
-                }
-
-                lastTier = currentTier;
-
-                normalizedSegments = newValues.ToArray();
-            }
+            int max = arr.Max();
+            return arr.Select(i => i * 1f / max).ToArray();
         }
 
-        private void redrawSegments(BufferedContainer container)
+        private void recalculateTiers()
         {
-            float x = 0;
-
-            if (normalizedSegments.Length == 0)
+            if (normalizedValues.Length == 0)
                 return;
 
-            foreach ((Tier tier, float start, float end) segment in normalizedSegments)
+            tiers = normalizedValues.Select(v =>
             {
-                if (segment.tier is Tier.Low or Tier.None) continue;
-                if (x > DrawWidth) continue;
+                int i = 1;
 
-                float width = (segment.end - segment.start) * DrawWidth;
-
-                if (x + width >= DrawWidth)
-                    width = DrawWidth - x;
-
-                Colour4 segmentColour = segment.tier switch
+                while (v >= i * 1f / tierCount)
                 {
-                    Tier.Lowest => LowestSegmentColour,
-                    Tier.Low => LowSegmentColour,
-                    Tier.Mid => MidSegmentColour,
-                    Tier.High => HighSegmentColour,
-                    Tier.Highest => HighestSegmentColour,
-                    _ => throw new ArgumentOutOfRangeException(nameof(segment.tier))
-                };
+                    i++;
+                }
+
+                return i - 1;
+            }).ToArray();
+        }
+
+        private void recalculateSegments()
+        {
+            segments.Clear();
+
+            if (tiers.Length == 0)
+            {
+                segments.Add(0, 0, 1);
+                return;
+            }
+
+            for (int i = 0; i < tiers.Length; i++)
+            {
+                for (int tier = 0; tier < tierCount; tier++)
+                {
+                    if (tier < 0)
+                        continue;
+
+                    // One tier covers itself and all tiers above it.
+                    // This prevents from drawing too many boxes.
+                    // By layering multiple transparent boxes, higher tiers will be brighter.
+                    // If using opaque colors, higher tiers will be on front, covering lower tiers,
+                    // and giving the feeling that more segments were drawn when actually not.
+                    if (tiers[i] >= tier)
+                    {
+                        if (!segments.IsTierStarted(tier))
+                            segments.StartSegment(tier, i * 1f / tiers.Length);
+                    }
+                    else
+                    {
+                        if (segments.IsTierStarted(tier))
+                            segments.EndSegment(tier, i * 1f / tiers.Length);
+                    }
+                }
+            }
+
+            segments.EndAllPendingSegments();
+        }
+
+        private Colour4 tierToColour(int tier) => tier >= 0 ? TierColours[tier] : new Colour4(0, 0, 0, 0);
+
+        // Base implementation, could be drawn with draw node if preferred
+        private void redrawSegments(BufferedContainer container)
+        {
+            if (segments.Count == 0)
+                return;
+
+            foreach (SegmentInfo segment in segments)
+            {
+                float width = (segment.End - segment.Start) * DrawWidth;
+
+                // If the segment width exceeds the DrawWidth, just fill the rest
+                if (width >= DrawWidth)
+                    width = DrawWidth;
 
                 container.Add(new Box
                 {
+                    Name = $"Tier {segment.Tier} segment",
                     Origin = Anchor.BottomLeft,
                     Anchor = Anchor.BottomLeft,
                     RelativeSizeAxes = Axes.Y,
-                    Position = new Vector2(x + segment.start * DrawWidth, 0),
+                    Position = new Vector2(segment.Start * DrawWidth, 0),
                     Width = width,
-                    Colour = segmentColour
+                    Depth = tierCount - 1 - segment.Tier, // Put higher tiers to the front
+                    Colour = tierToColour(segment.Tier)
                 });
-
-                x += width;
             }
         }
 
-        private enum Tier
+        protected struct SegmentInfo
         {
-            Lowest = 0,
-            Low = 1,
-            Mid = 2,
-            High = 3,
-            Highest = 4,
-            None = -1
+            /// <summary>
+            /// The tier this segment is at.
+            /// </summary>
+            public int Tier;
+
+            /// <summary>
+            /// The progress at which this segment starts.
+            /// </summary>
+            /// <remarks>
+            /// The value is a normalized float (from 0 to 1).
+            /// </remarks>
+            public float Start;
+
+            /// <summary>
+            /// The progress at which this segment ends.
+            /// </summary>
+            /// <remarks>
+            /// The value is a normalized float (from 0 to 1).
+            /// </remarks>
+            public float End;
+
+            /// <summary>
+            /// The length of this segment.
+            /// </summary>
+            /// <remarks>
+            /// The value is a normalized float (from 0 to 1).
+            /// </remarks>
+            public float Length => End - Start;
+        }
+
+        protected class SegmentManager : IEnumerable<SegmentInfo>
+        {
+            private readonly List<SegmentInfo> segments = new List<SegmentInfo>();
+
+            private readonly SegmentInfo?[] pendingSegments;
+
+            public SegmentManager(int tierCount)
+            {
+                pendingSegments = new SegmentInfo?[tierCount];
+            }
+
+            public void StartSegment(int tier, float start)
+            {
+                if (pendingSegments[tier] != null)
+                    throw new InvalidOperationException($"Another {nameof(SegmentInfo)} of tier {tier.ToString()} has already been started.");
+
+                pendingSegments[tier] = new SegmentInfo
+                {
+                    Tier = tier,
+                    Start = Math.Clamp(start, 0, 1)
+                };
+            }
+
+            public void EndSegment(int tier, float end)
+            {
+                SegmentInfo? pendingSegment = pendingSegments[tier];
+                if (pendingSegment == null)
+                    throw new InvalidOperationException($"Cannot end {nameof(SegmentInfo)} of tier {tier.ToString()} that has not been started.");
+
+                SegmentInfo segment = pendingSegment.Value;
+                segment.End = Math.Clamp(end, 0, 1);
+                segments.Add(segment);
+                pendingSegments[tier] = null;
+            }
+
+            public void EndAllPendingSegments()
+            {
+                foreach (SegmentInfo? pendingSegment in pendingSegments)
+                {
+                    if (pendingSegment != null)
+                    {
+                        SegmentInfo finalizedSegment = pendingSegment.Value;
+                        finalizedSegment.End = 1;
+                        segments.Add(finalizedSegment);
+                    }
+                }
+            }
+
+            public void Add(SegmentInfo segment) => segments.Add(segment);
+
+            public void Clear()
+            {
+                segments.Clear();
+
+                for (int i = 0; i < pendingSegments.Length; i++)
+                    pendingSegments[i] = null;
+            }
+
+            public int Count => segments.Count;
+
+            public void Add(int tier, float start, float end)
+            {
+                SegmentInfo segment = new SegmentInfo
+                {
+                    Tier = tier,
+                    Start = Math.Clamp(start, 0, 1),
+                    End = Math.Clamp(end, 0, 1)
+                };
+
+                if (segment.Start > segment.End)
+                    throw new InvalidOperationException("Segment start cannot be after segment end.");
+
+                Add(segment);
+            }
+
+            public bool IsTierStarted(int tier)
+            {
+                if (tier < 0)
+                    return false;
+
+                return pendingSegments[tier].HasValue;
+            }
+
+            public IEnumerator<SegmentInfo> GetEnumerator() => segments.GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }
