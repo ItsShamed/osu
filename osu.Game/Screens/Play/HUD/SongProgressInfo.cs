@@ -28,8 +28,6 @@ namespace osu.Game.Screens.Play.HUD
 
         private double songLength => endTime - startTime;
 
-        private const int margin = 10;
-
         public FontUsage Font
         {
             set
@@ -80,15 +78,15 @@ namespace osu.Game.Screens.Play.HUD
                     AutoSizeAxes = Axes.Both,
                     Child = new UprightAspectMaintainingContainer
                     {
-                        Origin = Anchor.CentreLeft,
-                        Anchor = Anchor.CentreLeft,
+                        Origin = Anchor.Centre,
+                        Anchor = Anchor.Centre,
                         AutoSizeAxes = Axes.Both,
                         Scaling = ScaleMode.Vertical,
                         ScalingFactor = 0.5f,
                         Child = timeCurrent = new SizePreservingSpriteText
                         {
-                            Origin = Anchor.CentreLeft,
-                            Anchor = Anchor.CentreLeft,
+                            Origin = Anchor.Centre,
+                            Anchor = Anchor.Centre,
                             Colour = colours.BlueLighter,
                             Font = OsuFont.Numeric,
                         }
@@ -152,7 +150,7 @@ namespace osu.Game.Screens.Play.HUD
 
             if (currentPercent != previousPercent)
             {
-                progress.Text = currentPercent.ToString() + @"%";
+                progress.Text = currentPercent + @"%";
                 previousPercent = currentPercent;
             }
 
