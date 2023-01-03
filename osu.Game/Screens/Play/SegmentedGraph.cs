@@ -19,6 +19,7 @@ namespace osu.Game.Screens.Play
         private BufferedContainer? rectSegments;
         private float previousDrawWidth;
         private bool graphNeedsUpdate;
+
         private int[]? values;
         private float[] normalizedValues = Array.Empty<float>();
         private int[] tiers = Array.Empty<int>();
@@ -48,12 +49,6 @@ namespace osu.Game.Screens.Play
         }
 
         public readonly Colour4[] TierColours;
-
-        public Colour4 LowestSegmentColour { get; set; }
-        public Colour4 LowSegmentColour { get; set; }
-        public Colour4 MidSegmentColour { get; set; }
-        public Colour4 HighSegmentColour { get; set; }
-        public Colour4 HighestSegmentColour { get; set; }
 
         private CancellationTokenSource? cts;
         private ScheduledDelegate? scheduledCreate;
@@ -170,9 +165,9 @@ namespace osu.Game.Screens.Play
             if (segments.Count == 0)
                 return;
 
-            foreach (SegmentInfo segment in segments)
+            foreach (SegmentInfo segment in segments.OrderBy(s => s.Tier)) // Lower tiers will be drawn first, putting them in the back
             {
-                float width = (segment.End - segment.Start) * DrawWidth;
+                float width = segment.Length * DrawWidth;
 
                 // If the segment width exceeds the DrawWidth, just fill the rest
                 if (width >= DrawWidth)
@@ -186,7 +181,6 @@ namespace osu.Game.Screens.Play
                     RelativeSizeAxes = Axes.Y,
                     Position = new Vector2(segment.Start * DrawWidth, 0),
                     Width = width,
-                    Depth = tierCount - 1 - segment.Tier, // Put higher tiers to the front
                     Colour = tierToColour(segment.Tier)
                 });
             }
