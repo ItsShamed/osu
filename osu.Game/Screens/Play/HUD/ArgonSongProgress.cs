@@ -25,7 +25,6 @@ namespace osu.Game.Screens.Play.HUD
         private readonly ArgonSongProgressGraph graph;
 
         private const float bar_height = 10;
-        private const float transition_duration = 200;
         private Color4 seekColour;
 
         public readonly Bindable<bool> AllowSeeking = new BindableBool();
@@ -57,7 +56,7 @@ namespace osu.Game.Screens.Play.HUD
                     RelativeSizeAxes = Axes.X,
                     Masking = true,
                     CornerRadius = 5,
-                    Depth = 2
+                    Depth = 4
                 },
                 playfieldBar = new ArgonSongProgressBar(bar_height)
                 {
@@ -65,7 +64,7 @@ namespace osu.Game.Screens.Play.HUD
                     Origin = Anchor.BottomLeft,
                     Anchor = Anchor.BottomLeft,
                     FillColour = Color4.White,
-                    Depth = 0f
+                    Depth = 2
                 },
                 catchupBar = new ArgonSongProgressBar(bar_height)
                 {
@@ -82,7 +81,7 @@ namespace osu.Game.Screens.Play.HUD
                     AlwaysPresent = true,
                     Alpha = 0f,
                     OnSeek = time => player?.Seek(time),
-                    Depth = -2
+                    Depth = 0
                 }
             };
             Origin = Anchor.BottomCentre;
@@ -115,19 +114,13 @@ namespace osu.Game.Screens.Play.HUD
         {
             graph.Objects = objects;
 
-            info.StartTime = FirstHitTime;
-            info.EndTime = LastHitTime;
-            catchupBar.StartTime = FirstHitTime;
-            catchupBar.EndTime = LastHitTime;
-            seekBar.StartTime = FirstHitTime;
-            seekBar.EndTime = LastHitTime;
+            info.StartTime = catchupBar.StartTime = seekBar.StartTime = FirstHitTime;
+            info.EndTime = catchupBar.EndTime = seekBar.EndTime = LastHitTime;
         }
 
         private void updateBarVisibility()
         {
-            catchupBar.AllowHover = AllowSeeking.Value;
-            playfieldBar.AllowHover = AllowSeeking.Value;
-            seekBar.ShowHandle = AllowSeeking.Value;
+            catchupBar.AllowHover = playfieldBar.AllowHover = seekBar.ShowHandle = AllowSeeking.Value;
         }
 
         protected override void Update()
@@ -139,7 +132,7 @@ namespace osu.Game.Screens.Play.HUD
             IClock referenceClock = drawableRuleset?.FrameStableClock ?? GameplayClock;
 
             float timeDiff = (float)(GameplayClock.CurrentTime - referenceClock.CurrentTime);
-            ChangeChildDepth(catchupBar, MathHelper.Clamp(timeDiff, -1, 1));
+            ChangeChildDepth(catchupBar, MathHelper.Clamp(timeDiff, -1, 1) + 2);
 
             double alphaThreshold = (LastHitTime - FirstHitTime) * 0.03;
 
