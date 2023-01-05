@@ -2,14 +2,14 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using osu.Framework.Graphics;
-using osu.Framework.Graphics.Containers;
-using osu.Framework.Graphics.Shapes;
-using osu.Framework.Graphics.UserInterface;
-using osu.Framework.Threading;
-using osu.Framework.Utils;
 using osuTK;
 using osuTK.Graphics;
+using osu.Framework.Graphics.Containers;
+using osu.Framework.Graphics;
+using osu.Framework.Graphics.Shapes;
+using osu.Framework.Graphics.UserInterface;
+using osu.Framework.Utils;
+using osu.Framework.Threading;
 
 namespace osu.Game.Screens.Play.HUD
 {
@@ -17,13 +17,13 @@ namespace osu.Game.Screens.Play.HUD
     {
         public Action<double>? OnSeek { get; set; }
 
-        private readonly Drawable fill;
+        private readonly Box fill;
         private readonly Container handleBase;
         private readonly Container handleContainer;
 
         private bool showHandle;
 
-        public bool ShowHandle
+        public bool Interactive
         {
             get => showHandle;
             set
@@ -35,12 +35,6 @@ namespace osu.Game.Screens.Play.HUD
 
                 handleBase.FadeTo(showHandle ? 1 : 0, 200);
             }
-        }
-
-        public bool Interactive
-        {
-            get => ShowHandle;
-            set => ShowHandle = value;
         }
 
         public virtual Color4 FillColour
@@ -71,7 +65,7 @@ namespace osu.Game.Screens.Play.HUD
             RelativeSizeAxes = Axes.X;
             Height = barHeight + handleBarHeight + handleSize.Y;
 
-            Children = new[]
+            Children = new Drawable[]
             {
                 new Box
                 {
@@ -153,7 +147,7 @@ namespace osu.Game.Screens.Play.HUD
             scheduledSeek?.Cancel();
             scheduledSeek = Schedule(() =>
             {
-                if (ShowHandle)
+                if (showHandle)
                     OnSeek?.Invoke(value);
             });
         }

@@ -106,11 +106,6 @@ namespace osu.Game.Screens.Play
             if (normalizedValues.Length == 0)
                 return;
 
-            // This seems straightforward but I'll explain anyway
-            // A value v is at tier n if: n/tierCount <= v < n+1/tierCount
-            // If we express v as: v = x/tierCount, we can then say that
-            // v is at tier n if: n <= x < n + 1
-            // We then just need to floor x to get the actual tier value.
             tiers = normalizedValues.Select(v => (int)Math.Floor(v * tierCount)).ToArray();
         }
 
