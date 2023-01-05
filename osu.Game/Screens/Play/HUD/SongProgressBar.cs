@@ -37,7 +37,7 @@ namespace osu.Game.Screens.Play.HUD
             }
         }
 
-        public virtual Color4 FillColour
+        public Color4 FillColour
         {
             set => fill.Colour = value;
         }
