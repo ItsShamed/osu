@@ -1,7 +1,6 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
 using System.Collections.Generic;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
@@ -10,27 +9,23 @@ using osu.Framework.Timing;
 using osu.Game.Graphics;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.UI;
-using osuTK;
-using osuTK.Graphics;
 
 namespace osu.Game.Screens.Play.HUD
 {
     public partial class ArgonSongProgress : SongProgress
     {
-        private readonly ArgonSongProgressBar playfieldBar; // Tracking playfield's clock
-        private readonly ArgonSongProgressBar catchupBar; // Tracking Track clock
-        private readonly ArgonSongProgressBar seekBar; // For seeking
-
         private readonly SongProgressInfo info;
         private readonly ArgonSongProgressGraph graph;
+        private readonly ArgonSongProgressBar bar;
 
         private const float bar_height = 10;
-        private Color4 seekColour;
 
         public readonly Bindable<bool> AllowSeeking = new BindableBool();
 
         [Resolved]
         private DrawableRuleset? drawableRuleset { get; set; }
+
+        private IClock referenceClock => drawableRuleset?.FrameStableClock ?? GameplayClock;
 
         [Resolved]
         private Player? player { get; set; }
@@ -38,6 +33,7 @@ namespace osu.Game.Screens.Play.HUD
         public ArgonSongProgress()
         {
             Anchor = Anchor.BottomCentre;
+            Origin = Anchor.BottomCentre;
             Children = new Drawable[]
             {
                 info = new SongProgressInfo
@@ -58,38 +54,19 @@ namespace osu.Game.Screens.Play.HUD
                     CornerRadius = 5,
                     Depth = 4
                 },
-                playfieldBar = new ArgonSongProgressBar(bar_height)
-                {
-                    Name = "Playfield bar",
-                    Origin = Anchor.BottomLeft,
-                    Anchor = Anchor.BottomLeft,
-                    FillColour = Color4.White,
-                    Depth = 2
-                },
-                catchupBar = new ArgonSongProgressBar(bar_height)
-                {
-                    Name = "Catch-up bar",
-                    Origin = Anchor.BottomLeft,
-                    Anchor = Anchor.BottomLeft,
-                    AlwaysPresent = true,
-                },
-                seekBar = new ArgonSongProgressBar(bar_height)
+                bar = new ArgonSongProgressBar(bar_height)
                 {
                     Name = "Seek bar",
                     Origin = Anchor.BottomLeft,
                     Anchor = Anchor.BottomLeft,
-                    AlwaysPresent = true,
-                    Alpha = 0f,
                     OnSeek = time => player?.Seek(time),
-                    Depth = 0
                 }
             };
-            Origin = Anchor.BottomCentre;
             RelativeSizeAxes = Axes.X;
         }
 
         [BackgroundDependencyLoader]
-        private void load(OsuColour colours)
+        private void load()
         {
             base.LoadComplete();
 
@@ -102,7 +79,6 @@ namespace osu.Game.Screens.Play.HUD
             info.ShowProgress = false;
             info.TextColour = Colour4.White;
             info.Font = OsuFont.Torus.With(size: 18, weight: FontWeight.Bold);
-            catchupBar.FillColour = seekColour = colours.BlueLight;
         }
 
         protected override void LoadComplete()
@@ -114,34 +90,20 @@ namespace osu.Game.Screens.Play.HUD
         {
             graph.Objects = objects;
 
-            info.StartTime = catchupBar.StartTime = seekBar.StartTime = FirstHitTime;
-            info.EndTime = catchupBar.EndTime = seekBar.EndTime = LastHitTime;
+            info.StartTime = bar.StartTime = FirstHitTime;
+            info.EndTime = bar.EndTime = LastHitTime;
         }
 
         private void updateBarVisibility()
         {
-            catchupBar.AllowHover = playfieldBar.AllowHover = seekBar.ShowHandle = AllowSeeking.Value;
+            bar.Interactive = AllowSeeking.Value;
         }
 
         protected override void Update()
         {
             base.Update();
-            Height = playfieldBar.Height + bar_height + info.Height;
-            graph.Height = playfieldBar.Height;
-
-            IClock referenceClock = drawableRuleset?.FrameStableClock ?? GameplayClock;
-
-            float timeDiff = (float)(GameplayClock.CurrentTime - referenceClock.CurrentTime);
-            ChangeChildDepth(catchupBar, MathHelper.Clamp(timeDiff, -1, 1) + 2);
-
-            double alphaThreshold = (LastHitTime - FirstHitTime) * 0.03;
-
-            catchupBar.Alpha = (float)(MathHelper.Clamp(MathF.Abs(timeDiff), 0, alphaThreshold) / alphaThreshold);
-
-            if (MathF.Abs(timeDiff) > 1f)
-            {
-                catchupBar.FillColour = seekColour;
-            }
+            Height = bar.Height + bar_height + info.Height;
+            graph.Height = bar.Height;
         }
 
         protected override void PopIn()
@@ -156,12 +118,12 @@ namespace osu.Game.Screens.Play.HUD
 
         protected override void UpdateProgress(double progress, bool isIntro)
         {
-            catchupBar.CurrentTime = GameplayClock.CurrentTime;
+            bar.ReferenceTime = GameplayClock.CurrentTime;
 
             if (isIntro)
-                playfieldBar.CurrentTime = 0;
+                bar.CurrentTime = 0;
             else
-                playfieldBar.CurrentTime = progress;
+                bar.CurrentTime = referenceClock.CurrentTime;
         }
     }
 }

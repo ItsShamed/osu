@@ -3,23 +3,49 @@
 
 using System;
 using osu.Framework.Graphics;
+using osu.Framework.Graphics.Containers;
+using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Threading;
+using osu.Framework.Utils;
+using osuTK;
 using osuTK.Graphics;
 
 namespace osu.Game.Screens.Play.HUD
 {
-    public abstract partial class SongProgressBar : SliderBar<double>
+    public partial class SongProgressBar : SliderBar<double>, ISongProgressBar
     {
-        public Action<double>? OnSeek;
+        public Action<double>? OnSeek { get; set; }
 
-        protected abstract Drawable Fill { get; set; }
+        private readonly Drawable fill;
+        private readonly Container handleBase;
+        private readonly Container handleContainer;
 
-        public abstract bool ShowHandle { get; set; }
+        private bool showHandle;
+
+        public bool ShowHandle
+        {
+            get => showHandle;
+            set
+            {
+                if (value == showHandle)
+                    return;
+
+                showHandle = value;
+
+                handleBase.FadeTo(showHandle ? 1 : 0, 200);
+            }
+        }
+
+        public bool Interactive
+        {
+            get => ShowHandle;
+            set => ShowHandle = value;
+        }
 
         public virtual Color4 FillColour
         {
-            set => Fill.Colour = value;
+            set => fill.Colour = value;
         }
 
         public double StartTime
@@ -35,6 +61,89 @@ namespace osu.Game.Screens.Play.HUD
         public double CurrentTime
         {
             set => CurrentNumber.Value = value;
+        }
+
+        public SongProgressBar(float barHeight, float handleBarHeight, Vector2 handleSize)
+        {
+            CurrentNumber.MinValue = 0;
+            CurrentNumber.MaxValue = 1;
+
+            RelativeSizeAxes = Axes.X;
+            Height = barHeight + handleBarHeight + handleSize.Y;
+
+            Children = new[]
+            {
+                new Box
+                {
+                    Name = "Background",
+                    Anchor = Anchor.BottomLeft,
+                    Origin = Anchor.BottomLeft,
+                    RelativeSizeAxes = Axes.X,
+                    Height = barHeight,
+                    Colour = Color4.Black,
+                    Alpha = 0.5f,
+                    Depth = 1,
+                },
+                fill = new Box
+                {
+                    Name = "Fill",
+                    Anchor = Anchor.BottomLeft,
+                    Origin = Anchor.BottomLeft,
+                    Height = barHeight,
+                },
+                handleBase = new Container
+                {
+                    Name = "HandleBar container",
+                    Origin = Anchor.BottomLeft,
+                    Anchor = Anchor.BottomLeft,
+                    Width = 2,
+                    Alpha = 0,
+                    Colour = Color4.White,
+                    Position = new Vector2(2, 0),
+                    Children = new Drawable[]
+                    {
+                        new Box
+                        {
+                            Name = "HandleBar box",
+                            RelativeSizeAxes = Axes.Both,
+                        },
+                        handleContainer = new Container
+                        {
+                            Name = "Handle container",
+                            Origin = Anchor.BottomCentre,
+                            Anchor = Anchor.TopCentre,
+                            Size = handleSize,
+                            CornerRadius = 5,
+                            Masking = true,
+                            Children = new Drawable[]
+                            {
+                                new Box
+                                {
+                                    Name = "Handle box",
+                                    RelativeSizeAxes = Axes.Both,
+                                    Colour = Color4.White
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        protected override void UpdateValue(float value)
+        {
+            // handled in update
+        }
+
+        protected override void Update()
+        {
+            base.Update();
+
+            handleBase.Height = Height - handleContainer.Height;
+            float newX = (float)Interpolation.Lerp(handleBase.X, NormalizedValue * UsableWidth, Math.Clamp(Time.Elapsed / 40, 0, 1));
+
+            fill.Width = newX;
+            handleBase.X = newX;
         }
 
         private ScheduledDelegate? scheduledSeek;

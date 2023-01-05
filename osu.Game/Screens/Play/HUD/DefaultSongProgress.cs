@@ -23,7 +23,7 @@ namespace osu.Game.Screens.Play.HUD
 
         private const float transition_duration = 200;
 
-        private readonly DefaultSongProgressBar bar;
+        private readonly SongProgressBar bar;
         private readonly SongProgressGraph graph;
         private readonly SongProgressInfo info;
 
@@ -66,7 +66,7 @@ namespace osu.Game.Screens.Play.HUD
                     Height = graph_height,
                     Margin = new MarginPadding { Bottom = bottom_bar_height },
                 },
-                bar = new DefaultSongProgressBar(bottom_bar_height, graph_height, handle_size)
+                bar = new SongProgressBar(bottom_bar_height, graph_height, handle_size)
                 {
                     Anchor = Anchor.BottomLeft,
                     Origin = Anchor.BottomLeft,
