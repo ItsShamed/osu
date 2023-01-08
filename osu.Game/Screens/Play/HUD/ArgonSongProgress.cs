@@ -6,6 +6,7 @@ using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Timing;
+using osu.Game.Configuration;
 using osu.Game.Graphics;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.UI;
@@ -21,6 +22,9 @@ namespace osu.Game.Screens.Play.HUD
         private const float bar_height = 10;
 
         public readonly Bindable<bool> AllowSeeking = new BindableBool();
+
+        [SettingSource("Show difficulty graph", "Whether a graph displaying difficulty throughout the beatmap should be shown")]
+        public Bindable<bool> ShowGraph { get; } = new BindableBool(true);
 
         [Resolved]
         private DrawableRuleset? drawableRuleset { get; set; }
@@ -52,7 +56,6 @@ namespace osu.Game.Screens.Play.HUD
                     RelativeSizeAxes = Axes.X,
                     Masking = true,
                     CornerRadius = 5,
-                    Depth = 4
                 },
                 bar = new ArgonSongProgressBar(bar_height)
                 {
@@ -84,6 +87,7 @@ namespace osu.Game.Screens.Play.HUD
         protected override void LoadComplete()
         {
             AllowSeeking.BindValueChanged(_ => updateBarVisibility(), true);
+            ShowGraph.BindValueChanged(_ => updateGraphVisibility(), true);
         }
 
         protected override void UpdateObjects(IEnumerable<HitObject> objects)
@@ -97,6 +101,12 @@ namespace osu.Game.Screens.Play.HUD
         private void updateBarVisibility()
         {
             bar.Interactive = AllowSeeking.Value;
+        }
+
+        private void updateGraphVisibility()
+        {
+            graph.FadeTo(ShowGraph.Value ? 1 : 0, 200, Easing.In);
+            bar.ShowBackground = !ShowGraph.Value;
         }
 
         protected override void Update()

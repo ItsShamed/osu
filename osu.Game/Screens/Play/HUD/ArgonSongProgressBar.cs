@@ -26,6 +26,16 @@ namespace osu.Game.Screens.Play.HUD
         private readonly RoundedBar playfieldBar;
         private readonly RoundedBar catchupBar;
 
+        private readonly Box background;
+
+        private readonly BindableBool showBackground = new BindableBool();
+
+        public bool ShowBackground
+        {
+            get => showBackground.Value;
+            set => showBackground.Value = value;
+        }
+
         private const float alpha_threshold = 2500;
 
         public Action<double>? OnSeek { get; set; }
@@ -75,8 +85,13 @@ namespace osu.Game.Screens.Play.HUD
             CornerRadius = 5;
             Masking = true;
 
-            Children = new[]
+            Children = new Drawable[]
             {
+                background = new Box
+                {
+                    RelativeSizeAxes = Axes.Both,
+                    Alpha = 0,
+                },
                 catchupBar = new RoundedBar
                 {
                     Name = "Audio bar",
@@ -121,6 +136,12 @@ namespace osu.Game.Screens.Play.HUD
         private void load(OsuColour colours)
         {
             catchupBar.AccentColour = colours.BlueLight;
+            showBackground.BindValueChanged(_ => updateBackground(), true);
+        }
+
+        private void updateBackground()
+        {
+            background.FadeTo(showBackground.Value ? 1 : 0, 200, Easing.In);
         }
 
         protected override bool OnHover(HoverEvent e)
