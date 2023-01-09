@@ -22,7 +22,6 @@ namespace osu.Game.Graphics.UserInterface
         private bool graphNeedsUpdate;
 
         private T[]? values;
-        private float[] normalizedValues = Array.Empty<float>();
         private int[] tiers = Array.Empty<int>();
         private readonly SegmentManager segments;
 
@@ -43,8 +42,7 @@ namespace osu.Game.Graphics.UserInterface
                 if (value == values) return;
 
                 values = value;
-                normalizedValues = normalizeValues(values);
-                recalculateTiers();
+                recalculateTiers(values);
                 graphNeedsUpdate = true;
             }
         }
@@ -60,10 +58,10 @@ namespace osu.Game.Graphics.UserInterface
 
             if (graphNeedsUpdate || (values != null && DrawWidth != previousDrawWidth))
             {
-                rectSegments?.FadeOut(500, Easing.OutQuint).Expire();
+                rectSegments?.FadeOut(150, Easing.OutQuint).Expire();
 
                 scheduledCreate?.Cancel();
-                scheduledCreate = Scheduler.AddDelayed(RecreateGraph, 500);
+                scheduledCreate = Scheduler.AddDelayed(RecreateGraph, 150);
 
                 previousDrawWidth = DrawWidth;
                 graphNeedsUpdate = false;
@@ -89,25 +87,37 @@ namespace osu.Game.Graphics.UserInterface
                     rectSegments = s
                 };
 
-                s.FadeInFromZero(500);
+                s.FadeInFromZero(100);
             }, (cts = new CancellationTokenSource()).Token);
         }
 
-        private float[] normalizeValues(T[] arr)
+        private void recalculateTiers(T[]? arr)
         {
-            if (arr.Length == 0)
-                return Array.Empty<float>();
-
-            float max = Convert.ToSingle(arr.Max());
-            return arr.Select(i => Convert.ToSingle(i) / max).ToArray();
-        }
-
-        private void recalculateTiers()
-        {
-            if (normalizedValues.Length == 0)
+            if (arr == null || arr.Length == 0)
+            {
+                tiers = Array.Empty<int>();
                 return;
+            }
 
-            tiers = normalizedValues.Select(v => (int)Math.Floor(v * tierCount)).ToArray();
+            float[] floatValues = arr.Select(v => Convert.ToSingle(v)).ToArray();
+
+            // Shift values to eliminate negative ones
+            float min = floatValues.Min();
+
+            if (min < 0)
+            {
+                for (int i = 0; i < floatValues.Length; i++)
+                    floatValues[i] += min;
+            }
+
+            // Normalize values
+            float max = floatValues.Max();
+
+            for (int i = 0; i < floatValues.Length; i++)
+                floatValues[i] /= max;
+
+            // Deduce tiers from values
+            tiers = floatValues.Select(v => (int)Math.Floor(v * tierCount)).ToArray();
         }
 
         private void recalculateSegments()
@@ -128,10 +138,8 @@ namespace osu.Game.Graphics.UserInterface
                         continue;
 
                     // One tier covers itself and all tiers above it.
-                    // This prevents from drawing too many boxes.
                     // By layering multiple transparent boxes, higher tiers will be brighter.
-                    // If using opaque colors, higher tiers will be on front, covering lower tiers,
-                    // and giving the feeling that more segments were drawn when actually not.
+                    // If using opaque colors, higher tiers will be on front, covering lower tiers.
                     if (tiers[i] >= tier)
                     {
                         if (!segments.IsTierStarted(tier))
@@ -146,6 +154,7 @@ namespace osu.Game.Graphics.UserInterface
             }
 
             segments.EndAllPendingSegments();
+            segments.Sort();
         }
 
         private Colour4 tierToColour(int tier) => tier >= 0 ? TierColours[tier] : new Colour4(0, 0, 0, 0);
@@ -156,7 +165,7 @@ namespace osu.Game.Graphics.UserInterface
             if (segments.Count == 0)
                 return;
 
-            foreach (SegmentInfo segment in segments.OrderBy(s => s.Tier)) // Lower tiers will be drawn first, putting them in the back
+            foreach (SegmentInfo segment in segments) // Lower tiers will be drawn first, putting them in the back
             {
                 float width = segment.Length * DrawWidth;
 
@@ -256,6 +265,12 @@ namespace osu.Game.Graphics.UserInterface
                     }
                 }
             }
+
+            public void Sort() =>
+                segments.Sort((a, b) =>
+                    a.Tier != b.Tier
+                        ? a.Tier.CompareTo(b.Tier)
+                        : a.Start.CompareTo(b.Start));
 
             public void Add(SegmentInfo segment) => segments.Add(segment);
 
