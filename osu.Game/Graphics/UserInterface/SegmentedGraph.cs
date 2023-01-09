@@ -12,15 +12,16 @@ using osu.Framework.Graphics.Shapes;
 using osu.Framework.Threading;
 using osuTK;
 
-namespace osu.Game.Screens.Play
+namespace osu.Game.Graphics.UserInterface
 {
-    public abstract partial class SegmentedGraph : Container
+    public abstract partial class SegmentedGraph<T> : Container
+        where T : struct, IComparable<T>, IConvertible, IEquatable<T>
     {
         private BufferedContainer? rectSegments;
         private float previousDrawWidth;
         private bool graphNeedsUpdate;
 
-        private int[]? values;
+        private T[]? values;
         private float[] normalizedValues = Array.Empty<float>();
         private int[] tiers = Array.Empty<int>();
         private readonly SegmentManager segments;
@@ -34,9 +35,9 @@ namespace osu.Game.Screens.Play
             segments = new SegmentManager(tierCount);
         }
 
-        public int[] Values
+        public T[] Values
         {
-            get => values ?? Array.Empty<int>();
+            get => values ?? Array.Empty<T>();
             set
             {
                 if (value == values) return;
@@ -92,13 +93,13 @@ namespace osu.Game.Screens.Play
             }, (cts = new CancellationTokenSource()).Token);
         }
 
-        private float[] normalizeValues(int[] arr)
+        private float[] normalizeValues(T[] arr)
         {
             if (arr.Length == 0)
                 return Array.Empty<float>();
 
-            int max = arr.Max();
-            return arr.Select(i => i * 1f / max).ToArray();
+            float max = Convert.ToSingle(arr.Max());
+            return arr.Select(i => Convert.ToSingle(i) / max).ToArray();
         }
 
         private void recalculateTiers()

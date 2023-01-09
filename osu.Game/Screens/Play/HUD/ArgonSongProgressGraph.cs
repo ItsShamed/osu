@@ -6,10 +6,11 @@ using System.Diagnostics;
 using System.Linq;
 using osu.Framework.Graphics;
 using osu.Game.Rulesets.Objects;
+using osu.Game.Graphics.UserInterface;
 
 namespace osu.Game.Screens.Play.HUD
 {
-    public partial class ArgonSongProgressGraph : SegmentedGraph
+    public partial class ArgonSongProgressGraph : SegmentedGraph<int>
     {
         private IEnumerable<HitObject>? objects;
 
