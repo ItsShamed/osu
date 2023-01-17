@@ -1,16 +1,19 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using osu.Framework.Allocation;
+using osu.Framework.Audio.Track;
 using osu.Framework.Bindables;
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Extensions.ObjectExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Colour;
-using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Effects;
 using osu.Framework.Graphics.Shapes;
+using osu.Game.Beatmaps.ControlPoints;
 using osu.Game.Graphics;
+using osu.Game.Graphics.Containers;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Rulesets.Objects.Drawables;
 using osu.Game.Rulesets.Osu.Objects;
@@ -21,7 +24,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.Skinning.Argon
 {
-    public partial class ArgonMainCirclePiece : CompositeDrawable
+    public partial class ArgonMainCirclePiece : BeatSyncedContainer
     {
         public const float BORDER_THICKNESS = (OsuHitObject.OBJECT_RADIUS * 2) * (2f / 58);
 
@@ -43,6 +46,8 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
         private readonly IBindable<Color4> accentColour = new Bindable<Color4>();
         private readonly IBindable<int> indexInCurrentCombo = new Bindable<int>();
         private readonly FlashPiece flash;
+
+        private bool isHit;
 
         [Resolved]
         private DrawableHitObject drawableObject { get; set; } = null!;
@@ -138,6 +143,7 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
                 switch (state)
                 {
                     case ArmedState.Hit:
+                        isHit = true;
                         // Fade out time is at a maximum of 800. Must match `DrawableHitCircle`'s arbitrary lifetime spec.
                         const double fade_out_time = 800;
 
@@ -186,6 +192,14 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
 
                         this.FadeOut(fade_out_time, Easing.OutQuad);
                         break;
+
+                    case ArmedState.Miss:
+                        isHit = true;
+                        break;
+
+                    case ArmedState.Idle:
+                        isHit = false;
+                        break;
                 }
             }
         }
@@ -196,6 +210,31 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
 
             if (drawableObject.IsNotNull())
                 drawableObject.ApplyCustomUpdateState -= updateStateTransforms;
+        }
+
+        protected override void OnNewBeat(int beatIndex, TimingControlPoint timingPoint, EffectControlPoint effectPoint, ChannelAmplitudes amplitudes)
+        {
+            if (!effectPoint.KiaiMode || isHit)
+                return;
+
+            outerGradient
+                .ScaleTo(OsuHitObject.OBJECT_RADIUS * 2 / OUTER_GRADIENT_SIZE)
+                .Then()
+                .FlashColour(ColourInfo.GradientVertical(accentColour.Value.Lighten(0.5f), accentColour.Value.Lighten(0.4f)), Math.Max(80, timingPoint.BeatLength - 80), Easing.OutSine)
+                .ScaleTo(1, Math.Max(80, timingPoint.BeatLength - 80), Easing.OutSine);
+
+            innerGradient
+                .ScaleTo(OUTER_GRADIENT_SIZE / INNER_GRADIENT_SIZE)
+                .Then()
+                .FlashColour(ColourInfo.GradientVertical(accentColour.Value, accentColour.Value.Darken(0.1f)), Math.Max(80, timingPoint.BeatLength - 80), Easing.OutSine)
+                .ScaleTo(1, Math.Max(80, timingPoint.BeatLength - 80), Easing.OutSine);
+
+            innerFill
+                .ScaleTo(INNER_GRADIENT_SIZE / INNER_FILL_SIZE)
+                .Then()
+                .FlashColour(accentColour.Value.Darken(1), Math.Max(80, timingPoint.BeatLength - 80), Easing.OutSine)
+                .ScaleTo(1, Math.Max(80, timingPoint.BeatLength - 80), Easing.OutSine);
+            outerFill.FlashColour(accentColour.Value.Darken(1), Math.Max(80, timingPoint.BeatLength - 80), Easing.OutSine);
         }
 
         private partial class FlashPiece : Circle
