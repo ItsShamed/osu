@@ -117,6 +117,8 @@ namespace osu.Game.Input.Bindings
             new KeyBinding(InputKey.Right, GlobalAction.SeekReplayForward),
             new KeyBinding(InputKey.Control, GlobalAction.HoldForHUD),
             new KeyBinding(InputKey.Tab, GlobalAction.ToggleChatFocus),
+            new KeyBinding(InputKey.Plus, GlobalAction.IncreaseBeatmapOffset),
+            new KeyBinding(InputKey.Minus, GlobalAction.DecreaseBeatmapOffset),
         };
 
         public IEnumerable<KeyBinding> SongSelectKeyBindings => new[]
@@ -349,6 +351,14 @@ namespace osu.Game.Input.Bindings
         ToggleProfile,
 
         [LocalisableDescription(typeof(GlobalActionKeyBindingStrings), nameof(GlobalActionKeyBindingStrings.EditorCloneSelection))]
-        EditorCloneSelection
+        EditorCloneSelection,
+
+        [LocalisableDescription(typeof(GlobalActionKeyBindingStrings), nameof(GlobalActionKeyBindingStrings.IncreaseBeatmapOffset))]
+        IncreaseBeatmapOffset,
+
+        [LocalisableDescription(typeof(GlobalActionKeyBindingStrings), nameof(GlobalActionKeyBindingStrings.DecreaseBeatmapOffset))]
+        DecreaseBeatmapOffset,
+
+        AffineBeatmapOffset,
     }
 }

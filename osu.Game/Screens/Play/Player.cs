@@ -311,6 +311,8 @@ namespace osu.Game.Screens.Play
 
             dependencies.CacheAs(DrawableRuleset.FrameStableClock);
 
+            rulesetSkinProvider.Add(new BeatmapOffsetHotkeyOverlay());
+
             // add the overlay components as a separate step as they proxy some elements from the above underlay/gameplay components.
             // also give the overlays the ruleset skin provider to allow rulesets to potentially override HUD elements (used to disable combo counters etc.)
             // we may want to limit this in the future to disallow rulesets from outright replacing elements the user expects to be there.

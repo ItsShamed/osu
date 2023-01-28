@@ -90,6 +90,16 @@ namespace osu.Game.Localisation
         public static LocalisableString DecreaseScrollSpeed => new TranslatableString(getKey(@"decrease_scroll_speed"), @"Decrease scroll speed");
 
         /// <summary>
+        /// "Increase beatmap offset"
+        /// </summary>
+        public static LocalisableString IncreaseBeatmapOffset => new TranslatableString(getKey(@"increase_beatmap_offset"), "Increase beatmap offset");
+
+        /// <summary>
+        /// "Decrease beatmap offset"
+        /// </summary>
+        public static LocalisableString DecreaseBeatmapOffset => new TranslatableString(getKey(@"decrease_beatmap_offset"), "Decrease beatmap offset");
+
+        /// <summary>
         /// "Select"
         /// </summary>
         public static LocalisableString Select => new TranslatableString(getKey(@"select"), @"Select");

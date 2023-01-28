@@ -24,7 +24,7 @@ namespace osu.Game.Screens.Play.PlayerSettings
             Children = new Drawable[]
             {
                 beatmapHitsoundsToggle = new PlayerCheckbox { LabelText = SkinSettingsStrings.BeatmapHitsounds },
-                new BeatmapOffsetControl
+                new BeatmapOffsetSlider
                 {
                     ReferenceScore = { BindTarget = ReferenceScore },
                 },

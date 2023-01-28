@@ -39,6 +39,16 @@ namespace osu.Game.Localisation
         /// </summary>
         public static LocalisableString HitObjectsAppearEarlier => new TranslatableString(getKey(@"hit_objects_appear_earlier"), @"(hit objects appear earlier)");
 
+        /// <summary>
+        /// "(later)"
+        /// </summary>
+        public static LocalisableString HitObjectsAppearLaterShort => new TranslatableString(getKey(@"hit_objects_appear_later_short"), @"(later)");
+
+        /// <summary>
+        /// "(earlier)"
+        /// </summary>
+        public static LocalisableString HitObjectsAppearEarlierShort => new TranslatableString(getKey(@"hit_objects_appear_earlier_short"), @"(earlier)");
+
         private static string getKey(string key) => $@"{prefix}:{key}";
     }
 }

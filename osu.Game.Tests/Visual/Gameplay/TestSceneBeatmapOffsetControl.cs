@@ -16,7 +16,7 @@ namespace osu.Game.Tests.Visual.Gameplay
 {
     public partial class TestSceneBeatmapOffsetControl : OsuTestScene
     {
-        private BeatmapOffsetControl offsetControl;
+        private BeatmapOffsetSlider offsetControl;
 
         [SetUpSteps]
         public void SetUpSteps()
@@ -29,7 +29,7 @@ namespace osu.Game.Tests.Visual.Gameplay
                     Origin = Anchor.Centre,
                     Children = new Drawable[]
                     {
-                        offsetControl = new BeatmapOffsetControl()
+                        offsetControl = new BeatmapOffsetSlider()
                     }
                 };
             });
