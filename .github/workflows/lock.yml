@@ -1,0 +1,30 @@
+name: Fork Lockdown
+
+on:
+  issues:
+    types: opened
+  pull_request_target:
+    types: opened
+
+jobs:
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dessant/repo-lockdown@v3
+        with:
+          github-token: ${{ github.token }}
+          issue-comment: |
+            This repository is a fork of https://github.com/ppy/osu used for contribution purposes.
+            Opening an issue on forks does not make sense. Thus, this repository accepts none.
+            
+            If you have any issues with some features I'm currently working on, please comment on the latest commit of the related branch (here) or Pull Request (on https://github.com/ppy/osu).
+          issue-lock-reason: resolved
+          issue-labels: wontfix
+          pr-comment: |
+            This repository is a fork of https://github.com/ppy/osu used for contribution purposes. No Pull Requests are accepted.  If you wanna help me contributing, contact me and I'll add you to the collaborators list and you'll be able to use the `contribution pass` label to open Pull Requests.
+            
+            > **Warning**
+            > Make sure you assign put the label **BEFORE** opening the Pull Request, otherwise it will be closed automatically.
+          pr-lock-reason: resolved
+          pr-labels: wontfix
+          exclude-pr-labels: contribution pass
