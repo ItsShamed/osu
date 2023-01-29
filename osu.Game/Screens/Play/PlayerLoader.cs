@@ -194,7 +194,6 @@ namespace osu.Game.Screens.Play
                         }
                     },
                 },
-                new BeatmapOffsetHotkeyOverlay(),
                 idleTracker = new IdleTracker(750),
                 lowPassFilter = new AudioFilter(audio.TrackMixer),
                 highPassFilter = new AudioFilter(audio.TrackMixer, BQFType.HighPass)
