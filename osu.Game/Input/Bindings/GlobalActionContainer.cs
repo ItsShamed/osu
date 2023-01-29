@@ -119,6 +119,8 @@ namespace osu.Game.Input.Bindings
             new KeyBinding(InputKey.Tab, GlobalAction.ToggleChatFocus),
             new KeyBinding(InputKey.Plus, GlobalAction.IncreaseBeatmapOffset),
             new KeyBinding(InputKey.Minus, GlobalAction.DecreaseBeatmapOffset),
+            new KeyBinding(new[] { InputKey.Alt, InputKey.Plus }, GlobalAction.IncreaseBeatmapOffsetFine),
+            new KeyBinding(new[] { InputKey.Alt, InputKey.Minus }, GlobalAction.DecreaseBeatmapOffsetFine),
         };
 
         public IEnumerable<KeyBinding> SongSelectKeyBindings => new[]
@@ -359,6 +361,10 @@ namespace osu.Game.Input.Bindings
         [LocalisableDescription(typeof(GlobalActionKeyBindingStrings), nameof(GlobalActionKeyBindingStrings.DecreaseBeatmapOffset))]
         DecreaseBeatmapOffset,
 
-        AffineBeatmapOffset,
+        [LocalisableDescription(typeof(GlobalActionKeyBindingStrings), nameof(GlobalActionKeyBindingStrings.IncreaseBeatmapOffsetFine))]
+        IncreaseBeatmapOffsetFine,
+
+        [LocalisableDescription(typeof(GlobalActionKeyBindingStrings), nameof(GlobalActionKeyBindingStrings.DecreaseBeatmapOffsetFine))]
+        DecreaseBeatmapOffsetFine,
     }
 }

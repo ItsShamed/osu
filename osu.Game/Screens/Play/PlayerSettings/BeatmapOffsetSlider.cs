@@ -97,16 +97,16 @@ namespace osu.Game.Screens.Play.PlayerSettings
 
         protected override void OnOffsetUpdated(ValueChangedEvent<double> offset)
         {
-                // the last play graph is relative to the offset at the point of the last play, so we need to factor that out.
-                double adjustmentSinceLastPlay = lastPlayBeatmapOffset - Current.Value;
+            // the last play graph is relative to the offset at the point of the last play, so we need to factor that out.
+            double adjustmentSinceLastPlay = lastPlayBeatmapOffset - Current.Value;
 
-                // Negative is applied here because the play graph is considering a hit offset, not track (as we currently use for clocks).
-                lastPlayGraph?.UpdateOffset(-adjustmentSinceLastPlay);
+            // Negative is applied here because the play graph is considering a hit offset, not track (as we currently use for clocks).
+            lastPlayGraph?.UpdateOffset(-adjustmentSinceLastPlay);
 
-                if (useAverageButton != null)
-                {
-                    useAverageButton.Enabled.Value = !Precision.AlmostEquals(lastPlayAverage, adjustmentSinceLastPlay, Current.Precision / 2);
-                }
+            if (useAverageButton != null)
+            {
+                useAverageButton.Enabled.Value = !Precision.AlmostEquals(lastPlayAverage, adjustmentSinceLastPlay, Current.Precision / 2);
+            }
         }
 
         private void scoreChanged(ValueChangedEvent<ScoreInfo?> score)

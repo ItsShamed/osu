@@ -14,7 +14,6 @@ using osu.Game.Input.Bindings;
 using osu.Game.Localisation;
 using osu.Game.Overlays;
 using osu.Game.Overlays.OSD;
-using osu.Game.Rulesets.UI;
 using osu.Game.Screens.Play.PlayerSettings;
 
 namespace osu.Game.Screens.Play
@@ -25,22 +24,27 @@ namespace osu.Game.Screens.Play
         private const double precision_step = 1;
 
         private OffsetUpdate lastUpdate;
-        private bool affine;
 
-        [Resolved]
-        private OnScreenDisplay display { get; set; } = null!;
+        private readonly bool restrictedInteraction;
 
-        [Resolved]
-        private IFrameStableClock frameStableClock { get; set; } = null!;
+        private readonly IBindable<bool> isPaused = new BindableBool();
+        public IBindable<bool> IsBreakTime { get; } = new BindableBool();
 
-        public BeatmapOffsetHotkeyOverlay()
+        [Resolved(canBeNull: true)]
+        private OnScreenDisplay? display { get; set; }
+
+        public BeatmapOffsetHotkeyOverlay(bool restrictedInteraction = false)
         {
             RelativeSizeAxes = Axes.Both;
+            this.restrictedInteraction = restrictedInteraction;
         }
 
-        [BackgroundDependencyLoader]
-        private void load()
+        [BackgroundDependencyLoader(true)]
+        private void load(IGameplayClock? gameplayClock)
         {
+            if (gameplayClock != null)
+                isPaused.BindTo(gameplayClock.IsPaused);
+
             lastUpdate = new OffsetUpdate
             {
                 Time = Clock.CurrentTime,
@@ -57,49 +61,63 @@ namespace osu.Game.Screens.Play
 
         public bool OnPressed(KeyBindingPressEvent<GlobalAction> e)
         {
-            if (e.Action != GlobalAction.IncreaseBeatmapOffset && e.Action != GlobalAction.DecreaseBeatmapOffset && e.Action != GlobalAction.AffineBeatmapOffset)
-                return false;
-
             if (e.Repeat)
-                return false;
-
-            if (Clock.CurrentTime - lastUpdate.Time < 150)
                 return false;
 
             switch (e.Action)
             {
                 case GlobalAction.IncreaseBeatmapOffset:
-                    Current.Value += affine ? precision_step : step;
-                    break;
+                    adjustOffset(step, e.Action);
+                    return true;
+
+                case GlobalAction.IncreaseBeatmapOffsetFine:
+                    adjustOffset(precision_step, e.Action);
+                    return true;
 
                 case GlobalAction.DecreaseBeatmapOffset:
-                    Current.Value -= affine ? precision_step : step;
-                    break;
+                    adjustOffset(-step, e.Action);
+                    return true;
 
-                case GlobalAction.AffineBeatmapOffset:
-                    affine = true;
-                    break;
+                case GlobalAction.DecreaseBeatmapOffsetFine:
+                    adjustOffset(-precision_step, e.Action);
+                    return true;
+            }
+
+            return false;
+        }
+
+        private void adjustOffset(double amount, GlobalAction action)
+        {
+            if (restrictedInteraction)
+            {
+                if (!IsBreakTime.Value)
+                    return;
+
+                // Rate limiting
+                if (Clock.CurrentTime - lastUpdate.Time < 150)
+                    return;
+
+                if (isPaused.Value)
+                    return;
             }
 
             lastUpdate = new OffsetUpdate
             {
                 Time = Clock.CurrentTime,
-                Offset = Current.Value,
-                Shortcut = e.Action
+                Offset = Current.Value + amount,
+                Shortcut = action
             };
 
-            return false;
+            Current.Value += amount;
         }
 
         public void OnReleased(KeyBindingReleaseEvent<GlobalAction> e)
         {
-            if (e.Action == GlobalAction.AffineBeatmapOffset)
-                affine = false;
         }
 
         protected override void OnOffsetUpdated(ValueChangedEvent<double> offset)
         {
-            display.Display(new BeatmapOffsetChangeToast(lastUpdate));
+            display?.Display(new BeatmapOffsetChangeToast(lastUpdate));
         }
 
         private partial class BeatmapOffsetChangeToast : Toast
@@ -118,8 +136,8 @@ namespace osu.Game.Screens.Play
 
             public LocalisableString GetValueText()
                 => Offset == 0
-                    ? LocalisableString.Interpolate($@"{Offset}ms")
-                    : LocalisableString.Interpolate($@"{Offset}ms {getEarlyLateText(Offset)}");
+                    ? LocalisableString.Interpolate($@"{Offset:F0}ms")
+                    : LocalisableString.Interpolate($@"{Offset:F0}ms {getEarlyLateText(Offset)}");
 
             private LocalisableString getEarlyLateText(double value)
             {
