@@ -81,6 +81,10 @@ namespace osu.Game.Screens.Play
                 case GlobalAction.DecreaseBeatmapOffsetFine:
                     adjustOffset(-precision_step, e.Action);
                     return true;
+
+                case GlobalAction.ResetBeatmapOffset:
+                    resetOffset();
+                    return true;
             }
 
             return false;
@@ -109,6 +113,18 @@ namespace osu.Game.Screens.Play
             };
 
             Current.Value += amount;
+        }
+
+        private void resetOffset()
+        {
+            lastUpdate = new OffsetUpdate
+            {
+                Time = Clock.CurrentTime,
+                Offset = 0,
+                Shortcut = GlobalAction.ResetBeatmapOffset
+            };
+
+            Current.Value = 0;
         }
 
         public void OnReleased(KeyBindingReleaseEvent<GlobalAction> e)

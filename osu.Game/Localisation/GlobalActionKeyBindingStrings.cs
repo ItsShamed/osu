@@ -100,6 +100,11 @@ namespace osu.Game.Localisation
         public static LocalisableString DecreaseBeatmapOffset => new TranslatableString(getKey(@"decrease_beatmap_offset"), "Decrease beatmap offset");
 
         /// <summary>
+        /// "Reset beatmap offset"
+        /// </summary>
+        public static LocalisableString ResetBeatmapOffset => new TranslatableString(getKey(@"reset_beatmap_offset"), "Reset beatmap offset");
+
+        /// <summary>
         /// "Increase beatmap offset (fine-tune)"
         /// </summary>
         public static LocalisableString IncreaseBeatmapOffsetFine => new TranslatableString(getKey(@"increase_beatmap_offset_fine"), "Increase beatmap offset (fine-tune)");
