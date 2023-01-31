@@ -1,8 +1,6 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-#nullable disable
-
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
@@ -10,15 +8,18 @@ using osu.Game.Graphics;
 using osu.Game.Graphics.Containers;
 using osu.Game.Graphics.Sprites;
 using System;
+using osu.Framework.Bindables;
 using osu.Framework.Graphics.Sprites;
 
 namespace osu.Game.Screens.Play.HUD
 {
     public partial class SongProgressInfo : Container
     {
-        private SizePreservingSpriteText timeCurrent;
-        private SizePreservingSpriteText timeLeft;
-        private SizePreservingSpriteText progress;
+        private SizePreservingSpriteText timeCurrent = null!;
+        private SizePreservingSpriteText timeLeft = null!;
+        private SizePreservingSpriteText progress = null!;
+
+        private Container progressContainer = null!;
 
         private double startTime;
         private double endTime;
@@ -53,17 +54,23 @@ namespace osu.Game.Screens.Play.HUD
             set => startTime = value;
         }
 
-        public bool ShowProgress { get; init; } = true;
+        public bool ShowProgress
+        {
+            get => showProgress.Value;
+            set => showProgress.Value = value;
+        }
+
+        private readonly Bindable<bool> showProgress = new BindableBool(true);
 
         public double EndTime
         {
             set => endTime = value;
         }
 
-        private IGameplayClock gameplayClock;
+        private IGameplayClock? gameplayClock;
 
         [BackgroundDependencyLoader(true)]
-        private void load(OsuColour colours, IGameplayClock clock)
+        private void load(OsuColour colours, IGameplayClock? clock)
         {
             if (clock != null)
                 gameplayClock = clock;
@@ -92,7 +99,7 @@ namespace osu.Game.Screens.Play.HUD
                         }
                     }
                 },
-                new Container
+                progressContainer = new Container
                 {
                     Origin = Anchor.Centre,
                     Anchor = Anchor.Centre,
@@ -136,6 +143,8 @@ namespace osu.Game.Screens.Play.HUD
                     }
                 }
             };
+
+            showProgress.BindValueChanged(e => progressContainer.FadeTo(e.NewValue ? 1 : 0, 200, Easing.In), true);
         }
 
         protected override void Update()

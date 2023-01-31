@@ -24,6 +24,9 @@ namespace osu.Game.Screens.Play.HUD
         [SettingSource("Show difficulty graph", "Whether a graph displaying difficulty throughout the beatmap should be shown")]
         public Bindable<bool> ShowGraph { get; } = new BindableBool(true);
 
+        [SettingSource("Show progess", "Whether the progress percentage should be shown")]
+        public Bindable<bool> ShowProgress { get; } = new BindableBool();
+
         [Resolved]
         private Player? player { get; set; }
 
@@ -81,6 +84,7 @@ namespace osu.Game.Screens.Play.HUD
 
             Interactive.BindValueChanged(_ => bar.Interactive = Interactive.Value, true);
             ShowGraph.BindValueChanged(_ => updateGraphVisibility(), true);
+            ShowProgress.BindValueChanged(e => info.ShowProgress = e.NewValue, true);
         }
 
         protected override void UpdateObjects(IEnumerable<HitObject> objects)
