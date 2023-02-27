@@ -204,6 +204,7 @@ namespace osu.Game.Rulesets.Osu.Skinning.Legacy
                     Duration = RNG.NextSingle(particle_duration_min, particle_duration_max),
                     StartAngle = (float)(RNG.NextDouble() * 4 - 2),
                     EndAngle = RNG.NextSingle(-2f, 2f),
+                    StartScale = 1,
                     EndScale = RNG.NextSingle(2f),
                     Velocity = getVelocity(),
                 };
