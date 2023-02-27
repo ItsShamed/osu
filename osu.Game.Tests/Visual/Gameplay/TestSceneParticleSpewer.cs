@@ -122,6 +122,7 @@ namespace osu.Game.Tests.Visual.Gameplay
                     Duration = RNG.NextSingle(MAX_DURATION),
                     StartAngle = RNG.NextSingle(MathF.PI * 2),
                     EndAngle = RNG.NextSingle(MathF.PI * 2),
+                    StartScale = 1,
                     EndScale = RNG.NextSingle(0.5f, 1.5f)
                 };
             }

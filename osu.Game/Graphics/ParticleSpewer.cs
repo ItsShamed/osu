@@ -1,8 +1,6 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-#nullable disable
-
 using System;
 using osu.Framework.Bindables;
 using osu.Framework.Extensions.EnumExtensions;
@@ -37,7 +35,7 @@ namespace osu.Game.Graphics
 
         private bool hasActiveParticles => Active.Value || (lastParticleAdded + maxDuration) > Time.Current;
 
-        protected ParticleSpewer(Texture texture, int perSecond, double maxDuration)
+        protected ParticleSpewer(Texture? texture, int perSecond, double maxDuration)
         {
             Texture = texture;
             Blending = BlendingParameters.Additive;
@@ -183,11 +181,12 @@ namespace osu.Game.Graphics
             public float Duration;
             public float StartAngle;
             public float EndAngle;
+            public float StartScale;
             public float EndScale;
 
             public float AlphaAtTime(float timeSinceStart) => 1 - progressAtTime(timeSinceStart);
 
-            public float ScaleAtTime(float timeSinceStart) => (float)Interpolation.Lerp(1, EndScale, progressAtTime(timeSinceStart));
+            public float ScaleAtTime(float timeSinceStart) => (float)Interpolation.Lerp(StartScale, EndScale, progressAtTime(timeSinceStart));
 
             public float AngleAtTime(float timeSinceStart) => (float)Interpolation.Lerp(StartAngle, EndAngle, progressAtTime(timeSinceStart));
 
