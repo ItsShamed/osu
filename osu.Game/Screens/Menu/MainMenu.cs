@@ -99,6 +99,7 @@ namespace osu.Game.Screens.Menu
 
             AddRangeInternal(new[]
             {
+                new MenuKiaiFountainOverlay(),
                 buttonsContainer = new ParallaxContainer
                 {
                     ParallaxAmount = 0.01f,
