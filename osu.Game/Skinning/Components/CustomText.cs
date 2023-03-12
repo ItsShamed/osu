@@ -20,6 +20,7 @@ using osu.Game.Graphics.Sprites;
 using osu.Game.Localisation;
 using osu.Game.Localisation.SkinComponents;
 using osu.Game.Resources.Localisation.Web;
+using CommonStrings = osu.Game.Localisation.CommonStrings;
 
 namespace osu.Game.Skinning.Components
 {
@@ -32,10 +33,21 @@ namespace osu.Game.Skinning.Components
         [SettingSource(typeof(BeatmapAttributeTextStrings), nameof(BeatmapAttributeTextStrings.Template), nameof(BeatmapAttributeTextStrings.TemplateDescription))]
         public Bindable<string> Template { get; set; } = new Bindable<string>("{Label}: {Value}");
 
-        [Resolved]
-        private IBindable<WorkingBeatmap> beatmap { get; set; } = null!;
-
-        private readonly Dictionary<CustomTextAttribute, LocalisableString> valueDictionary = new Dictionary<CustomTextAttribute, LocalisableString>();
+        private readonly Dictionary<CustomTextAttribute, LocalisableString> valueDictionary = new Dictionary<CustomTextAttribute, LocalisableString>
+        {
+            [CustomTextAttribute.CircleSize] = CommonStrings.NotAvailableAbbreviation,
+            [CustomTextAttribute.CircleSize] = CommonStrings.NotAvailableAbbreviation,
+            [CustomTextAttribute.Accuracy] = CommonStrings.NotAvailableAbbreviation,
+            [CustomTextAttribute.HPDrain] = CommonStrings.NotAvailableAbbreviation,
+            [CustomTextAttribute.ApproachRate] = CommonStrings.NotAvailableAbbreviation,
+            [CustomTextAttribute.StarRating] = CommonStrings.NotAvailableAbbreviation,
+            [CustomTextAttribute.Title] = CommonStrings.NotAvailableAbbreviation,
+            [CustomTextAttribute.DifficultyName] = CommonStrings.NotAvailableAbbreviation,
+            [CustomTextAttribute.Creator] = CommonStrings.NotAvailableAbbreviation,
+            [CustomTextAttribute.Length] = CommonStrings.NotAvailableAbbreviation,
+            [CustomTextAttribute.RankedStatus] = CommonStrings.NotAvailableAbbreviation,
+            [CustomTextAttribute.BPM] = CommonStrings.NotAvailableAbbreviation,
+        };
 
         private static readonly ImmutableDictionary<CustomTextAttribute, LocalisableString> label_dictionary = new Dictionary<CustomTextAttribute, LocalisableString>
         {
@@ -69,17 +81,22 @@ namespace osu.Game.Skinning.Components
             };
         }
 
+        [BackgroundDependencyLoader]
+        private void load(IBindable<WorkingBeatmap>? beatmap)
+        {
+            beatmap?.BindValueChanged(b =>
+            {
+                updateBeatmapContent(b.NewValue);
+                updateLabel();
+            }, true);
+        }
+
         protected override void LoadComplete()
         {
             base.LoadComplete();
 
             Attribute.BindValueChanged(_ => updateLabel());
             Template.BindValueChanged(_ => updateLabel());
-            beatmap.BindValueChanged(b =>
-            {
-                updateBeatmapContent(b.NewValue);
-                updateLabel();
-            }, true);
         }
 
         private void updateBeatmapContent(WorkingBeatmap workingBeatmap)
