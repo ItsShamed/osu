@@ -24,10 +24,10 @@ using osu.Game.Resources.Localisation.Web;
 namespace osu.Game.Skinning.Components
 {
     [UsedImplicitly]
-    public partial class BeatmapAttributeText : FontAdjustableSkinComponent
+    public partial class CustomText : FontAdjustableSkinComponent
     {
         [SettingSource(typeof(BeatmapAttributeTextStrings), nameof(BeatmapAttributeTextStrings.Attribute), nameof(BeatmapAttributeTextStrings.AttributeDescription))]
-        public Bindable<BeatmapAttribute> Attribute { get; } = new Bindable<BeatmapAttribute>(BeatmapAttribute.StarRating);
+        public Bindable<CustomTextAttribute> Attribute { get; } = new Bindable<CustomTextAttribute>(CustomTextAttribute.StarRating);
 
         [SettingSource(typeof(BeatmapAttributeTextStrings), nameof(BeatmapAttributeTextStrings.Template), nameof(BeatmapAttributeTextStrings.TemplateDescription))]
         public Bindable<string> Template { get; set; } = new Bindable<string>("{Label}: {Value}");
@@ -35,27 +35,27 @@ namespace osu.Game.Skinning.Components
         [Resolved]
         private IBindable<WorkingBeatmap> beatmap { get; set; } = null!;
 
-        private readonly Dictionary<BeatmapAttribute, LocalisableString> valueDictionary = new Dictionary<BeatmapAttribute, LocalisableString>();
+        private readonly Dictionary<CustomTextAttribute, LocalisableString> valueDictionary = new Dictionary<CustomTextAttribute, LocalisableString>();
 
-        private static readonly ImmutableDictionary<BeatmapAttribute, LocalisableString> label_dictionary = new Dictionary<BeatmapAttribute, LocalisableString>
+        private static readonly ImmutableDictionary<CustomTextAttribute, LocalisableString> label_dictionary = new Dictionary<CustomTextAttribute, LocalisableString>
         {
-            [BeatmapAttribute.CircleSize] = BeatmapsetsStrings.ShowStatsCs,
-            [BeatmapAttribute.Accuracy] = BeatmapsetsStrings.ShowStatsAccuracy,
-            [BeatmapAttribute.HPDrain] = BeatmapsetsStrings.ShowStatsDrain,
-            [BeatmapAttribute.ApproachRate] = BeatmapsetsStrings.ShowStatsAr,
-            [BeatmapAttribute.StarRating] = BeatmapsetsStrings.ShowStatsStars,
-            [BeatmapAttribute.Title] = EditorSetupStrings.Title,
-            [BeatmapAttribute.Artist] = EditorSetupStrings.Artist,
-            [BeatmapAttribute.DifficultyName] = EditorSetupStrings.DifficultyHeader,
-            [BeatmapAttribute.Creator] = EditorSetupStrings.Creator,
-            [BeatmapAttribute.Length] = ArtistStrings.TracklistLength.ToTitle(),
-            [BeatmapAttribute.RankedStatus] = BeatmapDiscussionsStrings.IndexFormBeatmapsetStatusDefault,
-            [BeatmapAttribute.BPM] = BeatmapsetsStrings.ShowStatsBpm,
+            [CustomTextAttribute.CircleSize] = BeatmapsetsStrings.ShowStatsCs,
+            [CustomTextAttribute.Accuracy] = BeatmapsetsStrings.ShowStatsAccuracy,
+            [CustomTextAttribute.HPDrain] = BeatmapsetsStrings.ShowStatsDrain,
+            [CustomTextAttribute.ApproachRate] = BeatmapsetsStrings.ShowStatsAr,
+            [CustomTextAttribute.StarRating] = BeatmapsetsStrings.ShowStatsStars,
+            [CustomTextAttribute.Title] = EditorSetupStrings.Title,
+            [CustomTextAttribute.Artist] = EditorSetupStrings.Artist,
+            [CustomTextAttribute.DifficultyName] = EditorSetupStrings.DifficultyHeader,
+            [CustomTextAttribute.Creator] = EditorSetupStrings.Creator,
+            [CustomTextAttribute.Length] = ArtistStrings.TracklistLength.ToTitle(),
+            [CustomTextAttribute.RankedStatus] = BeatmapDiscussionsStrings.IndexFormBeatmapsetStatusDefault,
+            [CustomTextAttribute.BPM] = BeatmapsetsStrings.ShowStatsBpm,
         }.ToImmutableDictionary();
 
         private readonly OsuSpriteText text;
 
-        public BeatmapAttributeText()
+        public CustomText()
         {
             AutoSizeAxes = Axes.Both;
 
@@ -84,18 +84,18 @@ namespace osu.Game.Skinning.Components
 
         private void updateBeatmapContent(WorkingBeatmap workingBeatmap)
         {
-            valueDictionary[BeatmapAttribute.Title] = workingBeatmap.BeatmapInfo.Metadata.Title;
-            valueDictionary[BeatmapAttribute.Artist] = workingBeatmap.BeatmapInfo.Metadata.Artist;
-            valueDictionary[BeatmapAttribute.DifficultyName] = workingBeatmap.BeatmapInfo.DifficultyName;
-            valueDictionary[BeatmapAttribute.Creator] = workingBeatmap.BeatmapInfo.Metadata.Author.Username;
-            valueDictionary[BeatmapAttribute.Length] = TimeSpan.FromMilliseconds(workingBeatmap.BeatmapInfo.Length).ToFormattedDuration();
-            valueDictionary[BeatmapAttribute.RankedStatus] = workingBeatmap.BeatmapInfo.Status.GetLocalisableDescription();
-            valueDictionary[BeatmapAttribute.BPM] = workingBeatmap.BeatmapInfo.BPM.ToLocalisableString(@"F2");
-            valueDictionary[BeatmapAttribute.CircleSize] = ((double)workingBeatmap.BeatmapInfo.Difficulty.CircleSize).ToLocalisableString(@"F2");
-            valueDictionary[BeatmapAttribute.HPDrain] = ((double)workingBeatmap.BeatmapInfo.Difficulty.DrainRate).ToLocalisableString(@"F2");
-            valueDictionary[BeatmapAttribute.Accuracy] = ((double)workingBeatmap.BeatmapInfo.Difficulty.OverallDifficulty).ToLocalisableString(@"F2");
-            valueDictionary[BeatmapAttribute.ApproachRate] = ((double)workingBeatmap.BeatmapInfo.Difficulty.ApproachRate).ToLocalisableString(@"F2");
-            valueDictionary[BeatmapAttribute.StarRating] = workingBeatmap.BeatmapInfo.StarRating.ToLocalisableString(@"F2");
+            valueDictionary[CustomTextAttribute.Title] = workingBeatmap.BeatmapInfo.Metadata.Title;
+            valueDictionary[CustomTextAttribute.Artist] = workingBeatmap.BeatmapInfo.Metadata.Artist;
+            valueDictionary[CustomTextAttribute.DifficultyName] = workingBeatmap.BeatmapInfo.DifficultyName;
+            valueDictionary[CustomTextAttribute.Creator] = workingBeatmap.BeatmapInfo.Metadata.Author.Username;
+            valueDictionary[CustomTextAttribute.Length] = TimeSpan.FromMilliseconds(workingBeatmap.BeatmapInfo.Length).ToFormattedDuration();
+            valueDictionary[CustomTextAttribute.RankedStatus] = workingBeatmap.BeatmapInfo.Status.GetLocalisableDescription();
+            valueDictionary[CustomTextAttribute.BPM] = workingBeatmap.BeatmapInfo.BPM.ToLocalisableString(@"F2");
+            valueDictionary[CustomTextAttribute.CircleSize] = ((double)workingBeatmap.BeatmapInfo.Difficulty.CircleSize).ToLocalisableString(@"F2");
+            valueDictionary[CustomTextAttribute.HPDrain] = ((double)workingBeatmap.BeatmapInfo.Difficulty.DrainRate).ToLocalisableString(@"F2");
+            valueDictionary[CustomTextAttribute.Accuracy] = ((double)workingBeatmap.BeatmapInfo.Difficulty.OverallDifficulty).ToLocalisableString(@"F2");
+            valueDictionary[CustomTextAttribute.ApproachRate] = ((double)workingBeatmap.BeatmapInfo.Difficulty.ApproachRate).ToLocalisableString(@"F2");
+            valueDictionary[CustomTextAttribute.StarRating] = workingBeatmap.BeatmapInfo.StarRating.ToLocalisableString(@"F2");
         }
 
         private void updateLabel()
@@ -112,7 +112,7 @@ namespace osu.Game.Skinning.Components
                                             .Cast<object?>()
                                             .ToArray();
 
-            foreach (var type in Enum.GetValues<BeatmapAttribute>())
+            foreach (var type in Enum.GetValues<CustomTextAttribute>())
             {
                 numberedTemplate = numberedTemplate.Replace($"{{{{{type}}}}}", $"{{{1 + (int)type}}}");
             }
@@ -123,7 +123,7 @@ namespace osu.Game.Skinning.Components
         protected override void SetFont(FontUsage font) => text.Font = font.With(size: 40);
     }
 
-    public enum BeatmapAttribute
+    public enum CustomTextAttribute
     {
         CircleSize,
         HPDrain,

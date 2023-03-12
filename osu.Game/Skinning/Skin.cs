@@ -136,6 +136,7 @@ namespace osu.Game.Skinning
                         // handle namespace changes...
                         jsonContent = jsonContent.Replace(@"osu.Game.Screens.Play.SongProgress", @"osu.Game.Screens.Play.HUD.DefaultSongProgress");
                         jsonContent = jsonContent.Replace(@"osu.Game.Screens.Play.HUD.LegacyComboCounter", @"osu.Game.Skinning.LegacyComboCounter");
+                        jsonContent = jsonContent.Replace(@"osu.Game.Skinning.Components.BeatmapAttributeText", @"osu.Game.Skinning.Components.CustomText");
 
                         var deserializedContent = JsonConvert.DeserializeObject<IEnumerable<SerialisedDrawableInfo>>(jsonContent);
 
