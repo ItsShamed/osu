@@ -72,6 +72,12 @@ namespace osu.Game.Graphics.UserInterface
             set => maskingContainer.Colour = value;
         }
 
+        public float Thickness
+        {
+            get => path.PathRadius;
+            set => path.PathRadius = value;
+        }
+
         public LineGraph()
         {
             Add(maskingContainer = new Container<Path>
