@@ -36,7 +36,8 @@ namespace osu.Game.Overlays.Profile
             Add(graph = new UserLineGraph
             {
                 RelativeSizeAxes = Axes.Both,
-                Alpha = 0
+                Alpha = 0,
+                Thickness = 1.5f
             });
 
             graph.OnBallMove += i => hoveredIndex = i;
