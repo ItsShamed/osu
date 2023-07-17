@@ -31,8 +31,8 @@ namespace osu.Game.Tests.Visual.Menus
             };
 
             AddSliderStep("Base Angle", 0f, 360f, 180f, value => fountain.BaseAngle = value);
-            AddSliderStep("Spread Angle", 0f, 90f, 30f, value => fountain.SpreadAngle = value);
-            AddSliderStep("Angle Variation", 0f, 90f, 10f, value => fountain.AngleVariation = value);
+            AddSliderStep("Spread Angle", 0f, 90f, 30f, value => fountain.SweepAngleRange = value);
+            AddSliderStep("Angle Variation", 0f, 90f, 10f, value => fountain.SpreadAngle = value);
             AddSliderStep("Reach Radius", 0f, 3f, 1.5f, value => fountain.ReachRadius = value);
             AddSliderStep("Gravity", 0f, 2f, 0.75f, value => fountain.ReachRadius = value);
             AddSliderStep("Base X", 0f, 1f, 0.5f, value => fountain.BasePosition.X = value);

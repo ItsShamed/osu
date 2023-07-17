@@ -15,10 +15,11 @@ namespace osu.Game.Graphics
         private float timeRemaining;
 
         public float BaseAngle = 0;
-        public float SpreadAngle = 35;
-        public float AngleVariation = 5f;
-        public float ReachRadius = 1.6f;
-        public float Gravity = 0.75f;
+        public float SweepAngleRange = 35;
+        public float SpreadAngle = 5f;
+        public float ReachRadius = 1.8f;
+        public float ReachRadiusVariation = 0.15f;
+        public float Gravity = 1.25f;
 
         public Vector2 BasePosition = new Vector2(0.5f);
 
@@ -40,17 +41,17 @@ namespace osu.Game.Graphics
         protected override FallingParticle CreateParticle()
         {
             (float sin, float cos) =
-                MathF.SinCos(MathHelper.DegreesToRadians(BaseAngle + angleOffset + RNG.NextSingle(-AngleVariation, AngleVariation)));
+                MathF.SinCos(MathHelper.DegreesToRadians(BaseAngle + angleOffset + RNG.NextSingle(-SpreadAngle, SpreadAngle)));
 
             return new FallingParticle
             {
-                Velocity = new Vector2(ReachRadius) * new Vector2(sin, cos),
+                Velocity = new Vector2(ReachRadius + RNG.NextSingle(-ReachRadiusVariation, ReachRadiusVariation)) * new Vector2(sin, cos),
                 StartPosition = BasePosition,
                 Duration = 1000,
                 StartAngle = BaseAngle,
-                StartScale = 2f,
-                EndAngle = BaseAngle + RNG.NextSingle(-AngleVariation, AngleVariation),
-                EndScale = RNG.NextSingle(1.5f, 3f)
+                StartScale = 1.25f,
+                EndAngle = BaseAngle + RNG.NextSingle(-SpreadAngle, SpreadAngle),
+                EndScale = RNG.NextSingle(1f, 2.5f)
             };
         }
 
@@ -67,13 +68,13 @@ namespace osu.Game.Graphics
             switch (fountainAnimation)
             {
                 case FountainAnimation.ClockwiseTurn:
-                    angleOffset = -SpreadAngle;
-                    this.TransformTo(nameof(angleOffset), SpreadAngle, duration);
+                    angleOffset = -SweepAngleRange;
+                    this.TransformTo(nameof(angleOffset), SweepAngleRange, duration);
                     break;
 
                 case FountainAnimation.CounterClockwiseTurn:
-                    angleOffset = SpreadAngle;
-                    this.TransformTo(nameof(angleOffset), -SpreadAngle, duration);
+                    angleOffset = SweepAngleRange;
+                    this.TransformTo(nameof(angleOffset), -SweepAngleRange, duration);
                     break;
 
                 default:
