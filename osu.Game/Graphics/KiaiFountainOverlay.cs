@@ -33,7 +33,7 @@ namespace osu.Game.Graphics
 
             Children = new[]
             {
-                LeftFountain = new Fountain(texture, 80)
+                LeftFountain = new Fountain(texture, 100)
                 {
                     Origin = Anchor.BottomLeft,
                     Anchor = Anchor.BottomLeft,
@@ -43,7 +43,7 @@ namespace osu.Game.Graphics
                     BasePosition = new Vector2(0.25f, 1.1f),
                     BaseAngle = 180,
                 },
-                RightFountain = new Fountain(texture, 80)
+                RightFountain = new Fountain(texture, 100)
                 {
                     Origin = Anchor.BottomRight,
                     Anchor = Anchor.BottomRight,
