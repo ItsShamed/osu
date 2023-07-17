@@ -160,13 +160,23 @@ namespace osu.Game.Screens.Edit.Compose.Components
             if (e.Repeat)
                 return false;
 
+            bool handled;
+
             switch (e.Action)
             {
                 case GlobalAction.EditorFlipHorizontally:
-                    return HandleFlip(Direction.Horizontal, true);
+                    ChangeHandler?.BeginChange();
+                    handled = HandleFlip(Direction.Horizontal, true);
+                    ChangeHandler?.EndChange();
+
+                    return handled;
 
                 case GlobalAction.EditorFlipVertically:
-                    return HandleFlip(Direction.Vertical, true);
+                    ChangeHandler?.BeginChange();
+                    handled = HandleFlip(Direction.Vertical, true);
+                    ChangeHandler?.EndChange();
+
+                    return handled;
             }
 
             return false;
@@ -197,9 +207,9 @@ namespace osu.Game.Screens.Edit.Compose.Components
         #region Selection Handling
 
         /// <summary>
-        /// Bind an action to deselect all selected blueprints.
+        /// Deselect all selected items.
         /// </summary>
-        internal Action DeselectAll { private get; set; }
+        protected void DeselectAll() => SelectedItems.Clear();
 
         /// <summary>
         /// Handle a blueprint becoming selected.
@@ -303,7 +313,7 @@ namespace osu.Game.Screens.Edit.Compose.Components
             if (blueprint.IsSelected)
                 return false;
 
-            DeselectAll?.Invoke();
+            DeselectAll();
             blueprint.Select();
             return true;
         }
@@ -311,6 +321,7 @@ namespace osu.Game.Screens.Edit.Compose.Components
         protected void DeleteSelected()
         {
             DeleteItems(SelectedItems.ToArray());
+            DeselectAll();
         }
 
         #endregion

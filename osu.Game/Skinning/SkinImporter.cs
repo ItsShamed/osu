@@ -101,7 +101,8 @@ namespace osu.Game.Skinning
                 // In both of these cases, the expectation from the user is that the filename or folder name is displayed somewhere to identify the skin.
                 if (archiveName != item.Name
                     // lazer exports use this format
-                    && archiveName != item.GetDisplayString())
+                    // GetValidFilename accounts for skins with non-ASCII characters in the name that have been exported by lazer.
+                    && archiveName != item.GetDisplayString().GetValidFilename())
                     item.Name = @$"{item.Name} [{archiveName}]";
             }
 
@@ -197,7 +198,7 @@ namespace osu.Game.Skinning
 
                 using (var streamContent = new MemoryStream(Encoding.UTF8.GetBytes(skinInfoJson)))
                 {
-                    modelManager.AddFile(s, streamContent, skin_info_file, s.Realm);
+                    modelManager.AddFile(s, streamContent, skin_info_file, s.Realm!);
                 }
 
                 // Then serialise each of the drawable component groups into respective files.
@@ -212,9 +213,9 @@ namespace osu.Game.Skinning
                         var oldFile = s.GetFile(filename);
 
                         if (oldFile != null)
-                            modelManager.ReplaceFile(oldFile, streamContent, s.Realm);
+                            modelManager.ReplaceFile(oldFile, streamContent, s.Realm!);
                         else
-                            modelManager.AddFile(s, streamContent, filename, s.Realm);
+                            modelManager.AddFile(s, streamContent, filename, s.Realm!);
                     }
                 }
 

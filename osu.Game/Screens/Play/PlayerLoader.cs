@@ -15,6 +15,7 @@ using osu.Framework.Graphics.Transforms;
 using osu.Framework.Input;
 using osu.Framework.Screens;
 using osu.Framework.Threading;
+using osu.Game.Audio;
 using osu.Game.Audio.Effects;
 using osu.Game.Configuration;
 using osu.Game.Graphics;
@@ -25,6 +26,7 @@ using osu.Game.Overlays;
 using osu.Game.Overlays.Notifications;
 using osu.Game.Screens.Menu;
 using osu.Game.Screens.Play.PlayerSettings;
+using osu.Game.Skinning;
 using osu.Game.Users;
 using osu.Game.Utils;
 using osuTK;
@@ -67,12 +69,16 @@ namespace osu.Game.Screens.Play
 
         private OsuScrollContainer settingsScroll = null!;
 
+        private Bindable<bool> showStoryboards = null!;
+
         private bool backgroundBrightnessReduction;
 
         private readonly BindableDouble volumeAdjustment = new BindableDouble(1);
 
         private AudioFilter lowPassFilter = null!;
         private AudioFilter highPassFilter = null!;
+
+        private SkinnableSound sampleRestart = null!;
 
         [Cached]
         private OverlayColourProvider colourProvider = new OverlayColourProvider(OverlayColourScheme.Purple);
@@ -149,10 +155,11 @@ namespace osu.Game.Screens.Play
         }
 
         [BackgroundDependencyLoader]
-        private void load(SessionStatics sessionStatics, AudioManager audio)
+        private void load(SessionStatics sessionStatics, AudioManager audio, OsuConfigManager config)
         {
             muteWarningShownOnce = sessionStatics.GetBindable<bool>(Static.MutedAudioNotificationShownOnce);
             batteryWarningShownOnce = sessionStatics.GetBindable<bool>(Static.LowBatteryNotificationShownOnce);
+            showStoryboards = config.GetBindable<bool>(OsuSetting.ShowStoryboard);
 
             const float padding = 25;
 
@@ -196,7 +203,8 @@ namespace osu.Game.Screens.Play
                 },
                 idleTracker = new IdleTracker(750),
                 lowPassFilter = new AudioFilter(audio.TrackMixer),
-                highPassFilter = new AudioFilter(audio.TrackMixer, BQFType.HighPass)
+                highPassFilter = new AudioFilter(audio.TrackMixer, BQFType.HighPass),
+                sampleRestart = new SkinnableSound(new SampleInfo(@"Gameplay/restart", @"pause-retry-click"))
             };
 
             if (Beatmap.Value.BeatmapInfo.EpilepsyWarning)
@@ -261,6 +269,8 @@ namespace osu.Game.Screens.Play
             CurrentPlayer = null;
             playerConsumed = false;
             cancelLoad();
+
+            sampleRestart.Play();
 
             contentIn();
         }
@@ -463,7 +473,10 @@ namespace osu.Game.Screens.Play
 
                 // only show if the warning was created (i.e. the beatmap needs it)
                 // and this is not a restart of the map (the warning expires after first load).
-                if (epilepsyWarning?.IsAlive == true)
+                //
+                // note the late check of storyboard enable as the user may have just changed it
+                // from the settings on the loader screen.
+                if (epilepsyWarning?.IsAlive == true && showStoryboards.Value)
                 {
                     const double epilepsy_display_length = 3000;
 
@@ -483,6 +496,7 @@ namespace osu.Game.Screens.Play
                 {
                     // This goes hand-in-hand with the restoration of low pass filter in contentOut().
                     this.TransformBindableTo(volumeAdjustment, 0, CONTENT_OUT_DURATION, Easing.OutCubic);
+                    epilepsyWarning?.Expire();
                 }
 
                 pushSequence.Schedule(() =>
