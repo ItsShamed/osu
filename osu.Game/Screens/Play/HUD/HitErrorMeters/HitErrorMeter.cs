@@ -20,6 +20,10 @@ namespace osu.Game.Screens.Play.HUD.HitErrorMeters
 {
     public abstract partial class HitErrorMeter : CompositeDrawable, ISerialisableDrawable
     {
+        private const double fade_in_duration = 100;
+        private const double fade_out_duration = 500;
+        private const double fade_out_delay = 4000;
+
         protected HitWindows HitWindows { get; private set; }
 
         [Resolved]
@@ -58,11 +62,13 @@ namespace osu.Game.Screens.Play.HUD.HitErrorMeters
             {
                 if (e.NewValue)
                 {
-                    this.FadeIn(100, Easing.InQuint).Then(4000).FadeOut(500, Easing.OutQuint);
+                    this.FadeIn(fade_in_duration, Easing.InQuint)
+                        .Then(fade_out_delay)
+                        .FadeOut(fade_out_duration, Easing.OutQuint);
                 }
                 else
                 {
-                    this.FadeIn(100, Easing.InQuint);
+                    this.FadeIn(fade_in_duration, Easing.InQuint);
                 }
             }, true);
         }
@@ -78,7 +84,9 @@ namespace osu.Game.Screens.Play.HUD.HitErrorMeters
         {
             if (AutoHide.Value)
             {
-                this.FadeIn(100, Easing.InQuint).Then(4000).FadeOut(500, Easing.OutQuint);
+                this.FadeIn(fade_in_duration, Easing.InQuint)
+                    .Then(fade_out_delay)
+                    .FadeOut(fade_out_duration, Easing.OutQuint);
             }
         }
 
