@@ -380,6 +380,7 @@ namespace osu.Game.Skinning
                                     hitError.Anchor = Anchor.BottomCentre;
                                     hitError.Origin = Anchor.CentreLeft;
                                     hitError.Rotation = -90;
+                                    hitError.AutoHide.Value = true;
 
                                     if (keyCounter != null)
                                     {
