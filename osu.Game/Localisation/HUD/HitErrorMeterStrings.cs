@@ -15,10 +15,10 @@ namespace osu.Game.Localisation.HUD
         public static LocalisableString AutoHide => new TranslatableString(getKey(@"auto_hide"), @"Auto-hide");
 
         /// <summary>
-        /// "Automatically hides the meter when no judgement is processed for long enough."
+        /// "Automatically hides the meter when gameplay is idle."
         /// </summary>
-        public static LocalisableString AutoHideDescription => new TranslatableString(getKey(@"auto_hide_description"), @"Automatically hides the meter when no judgement is processed for long enough.");
+        public static LocalisableString AutoHideDescription => new TranslatableString(getKey(@"auto_hide_description"), @"Automatically hides the meter when gameplay is idle.");
 
-        private static string getKey(string key) => $"{prefix}:{key}";
+        private static string getKey(string key) => $@"{prefix}:{key}";
     }
 }
