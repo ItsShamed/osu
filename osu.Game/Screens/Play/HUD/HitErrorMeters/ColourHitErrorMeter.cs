@@ -57,6 +57,8 @@ namespace osu.Game.Screens.Play.HUD.HitErrorMeters
 
         protected override void OnNewJudgement(JudgementResult judgement)
         {
+            base.OnNewJudgement(judgement);
+
             if (!judgement.Type.IsScorable() || judgement.Type.IsBonus())
                 return;
 

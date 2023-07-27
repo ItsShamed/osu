@@ -190,6 +190,28 @@ namespace osu.Game.Tests.Visual.Gameplay
             AddAssert("colour cleared", () => !this.ChildrenOfType<ColourHitErrorMeter.HitErrorShape>().Any());
         }
 
+        [Test]
+        public void TestAutoHide()
+        {
+            AddStep("OD 1", () => recreateDisplay(new OsuHitWindows(), 1));
+            AddStep("enable auto-hide", () => this.ChildrenOfType<HitErrorMeter>().ForEach(
+                meter => meter.AutoHide.Value = true));
+
+            AddUntilStep("wait until hidden", () => this.ChildrenOfType<HitErrorMeter>().All(
+                meter => meter.Alpha <= 0.0001f));
+
+            AddStep("hit", () => newJudgement(0.2D));
+            AddAssert("is visible", () => this.ChildrenOfType<HitErrorMeter>().All(
+                meter => meter.Alpha > 0));
+            AddUntilStep("wait until hidden", () => this.ChildrenOfType<HitErrorMeter>().All(
+                meter => meter.Alpha <= 0.0001f));
+
+            AddStep("disable auto-hide", () => this.ChildrenOfType<HitErrorMeter>().ForEach(
+                meter => meter.AutoHide.Value = false));
+            AddAssert("is visible", () => this.ChildrenOfType<HitErrorMeter>().All(
+                meter => meter.Alpha > 0));
+        }
+
         private void recreateDisplay(HitWindows hitWindows, float overallDifficulty)
         {
             hitWindows?.SetDifficulty(overallDifficulty);

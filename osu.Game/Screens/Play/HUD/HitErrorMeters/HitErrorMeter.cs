@@ -4,8 +4,12 @@
 #nullable disable
 
 using osu.Framework.Allocation;
+using osu.Framework.Bindables;
+using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
+using osu.Game.Configuration;
 using osu.Game.Graphics;
+using osu.Game.Localisation.HUD;
 using osu.Game.Rulesets.Judgements;
 using osu.Game.Rulesets.Scoring;
 using osu.Game.Rulesets.UI;
@@ -27,6 +31,9 @@ namespace osu.Game.Screens.Play.HUD.HitErrorMeters
         [Resolved(canBeNull: true)]
         private GameplayClockContainer gameplayClockContainer { get; set; }
 
+        [SettingSource(typeof(HitErrorMeterStrings), nameof(HitErrorMeterStrings.AutoHide), nameof(HitErrorMeterStrings.AutoHideDescription))]
+        public Bindable<bool> AutoHide { get; } = new BindableBool();
+
         public bool UsesFixedAnchor { get; set; }
 
         [BackgroundDependencyLoader(true)]
@@ -46,6 +53,18 @@ namespace osu.Game.Screens.Play.HUD.HitErrorMeters
                 gameplayClockContainer.OnSeek += Clear;
 
             processor.NewJudgement += processorNewJudgement;
+
+            AutoHide.BindValueChanged(e =>
+            {
+                if (e.NewValue)
+                {
+                    this.FadeIn(100, Easing.InQuint).Then(4000).FadeOut(500, Easing.OutQuint);
+                }
+                else
+                {
+                    this.FadeIn(100, Easing.InQuint);
+                }
+            }, true);
         }
 
         // Scheduled as meter implementations are likely going to change/add drawables when reacting to this.
@@ -55,7 +74,13 @@ namespace osu.Game.Screens.Play.HUD.HitErrorMeters
         /// Fired when a new judgement arrives.
         /// </summary>
         /// <param name="judgement">The new judgement.</param>
-        protected abstract void OnNewJudgement(JudgementResult judgement);
+        protected virtual void OnNewJudgement(JudgementResult judgement)
+        {
+            if (AutoHide.Value)
+            {
+                this.FadeIn(100, Easing.InQuint).Then(4000).FadeOut(500, Easing.OutQuint);
+            }
+        }
 
         protected Color4 GetColourForHitResult(HitResult result)
         {

@@ -397,6 +397,8 @@ namespace osu.Game.Screens.Play.HUD.HitErrorMeters
 
         protected override void OnNewJudgement(JudgementResult judgement)
         {
+            base.OnNewJudgement(judgement);
+
             const int arrow_move_duration = 800;
 
             if (!judgement.IsHit || judgement.HitObject.HitWindows?.WindowFor(HitResult.Miss) == 0)
