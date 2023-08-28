@@ -175,8 +175,12 @@ namespace osu.Game.Overlays.Chat
             if (ShowSearch.Value)
                 return;
 
-            OnChatMessageCommitted?.Invoke(sender.Text);
+            // Making sure to empty text before committing message
+            // because otherwise text would persist when committing
+            // commands that trigger a channel change.
+            string committedText = sender.Text;
             sender.Text = string.Empty;
+            OnChatMessageCommitted?.Invoke(committedText);
         }
     }
 }
