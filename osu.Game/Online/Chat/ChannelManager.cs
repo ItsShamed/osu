@@ -244,6 +244,7 @@ namespace osu.Game.Online.Chat
                 return;
 
             string[] parameters = text.Split(' ', 2);
+            string[] args = parameters.Length == 2 ? parameters[1].Split(' ') : Array.Empty<string>();
             string command = parameters[0];
             string content = parameters.Length == 2 ? parameters[1] : string.Empty;
 
@@ -284,25 +285,36 @@ namespace osu.Game.Online.Chat
                 case "chat":
                 case "msg":
                 case "query":
-                    if (string.IsNullOrWhiteSpace(content))
+                    if (args.Length == 0)
                     {
-                        target.AddNewMessages(new ErrorMessage($"Usage: /{command} [user]"));
+                        target.AddNewMessages(new ErrorMessage($"Usage: /{command} [user] <message>"));
                         break;
                     }
 
                     // Check if the user has joined the requested channel already.
                     // This uses the channel name for comparison as the PM user's username is unavailable after a restart.
                     var privateChannel = JoinedChannels.FirstOrDefault(
-                        c => c.Type == ChannelType.PM && c.Users.Count == 1 && c.Name.Equals(content, StringComparison.OrdinalIgnoreCase));
+                        c => c.Type == ChannelType.PM && c.Users.Count == 1 && c.Name.Equals(args[0], StringComparison.OrdinalIgnoreCase));
+
+                    string optionalMessage = string.Join(' ', args.Skip(1));
 
                     if (privateChannel != null)
                     {
                         CurrentChannel.Value = privateChannel;
+
+                        if (!string.IsNullOrWhiteSpace(optionalMessage))
+                            PostMessage(optionalMessage);
                         break;
                     }
 
                     var request = new GetUserRequest(content);
-                    request.Success += OpenPrivateChannel;
+                    request.Success += u =>
+                    {
+                        OpenPrivateChannel(u);
+
+                        if (!string.IsNullOrWhiteSpace(optionalMessage))
+                            PostMessage(optionalMessage);
+                    };
                     request.Failure += e => target.AddNewMessages(
                         new ErrorMessage(e.InnerException?.Message == @"NotFound" ? $"User '{content}' was not found." : $"Could not fetch user '{content}'."));
 
