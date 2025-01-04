@@ -10,6 +10,7 @@ using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Utils;
 using osu.Game.Online.API;
+using osu.Game.Online.Rooms;
 using osu.Game.Online.Spectator;
 using osu.Game.Replays.Legacy;
 using osu.Game.Rulesets;
@@ -45,6 +46,9 @@ namespace osu.Game.Tests.Visual.Spectator
         private readonly Dictionary<int, int> userBeatmapDictionary = new Dictionary<int, int>();
         private readonly Dictionary<int, APIMod[]> userModsDictionary = new Dictionary<int, APIMod[]>();
         private readonly Dictionary<int, int> userNextFrameDictionary = new Dictionary<int, int>();
+
+        private readonly HashSet<int> watchingUsers = new HashSet<int>();
+        private readonly Dictionary<int, HashSet<SpectatorUser>> spectatorWaitingLists = new Dictionary<int, HashSet<SpectatorUser>>();
 
         [Resolved]
         private IAPIProvider api { get; set; } = null!;
@@ -159,6 +163,90 @@ namespace osu.Game.Tests.Visual.Spectator
             }
         }
 
+        /// <summary>
+        /// Adds an arbitrary spectator to an arbitrary user.
+        /// </summary>
+        /// <param name="userId">The user that is spectating.</param>
+        /// <param name="to">The user that is being spectated.</param>
+        public void AddSpectator(int userId, int to)
+        {
+            if (watchingUsers.Contains(to) || to == api.LocalUser.Value.Id)
+            {
+                ((ISpectatorClient)this).UserBeganWatching(new SpectatorUser(userId), to);
+
+                if (to == api.LocalUser.Value.Id)
+                    return;
+            }
+
+            getOrCreateWaitingList(to).Add(new SpectatorUser(userId));
+        }
+
+        /// <summary>
+        /// Remove a previously watching spectator to an arbitrary user.
+        /// </summary>
+        /// <param name="userId">The user that is spectating.</param>
+        /// <param name="from">The user that is being spectated.</param>
+        public void RemoveSpectator(int userId, int from)
+        {
+            if (watchingUsers.Contains(from) || from == api.LocalUser.Value.Id)
+            {
+                ((ISpectatorClient)this).UserStoppedWatching(new SpectatorUser(userId), from);
+
+                if (from == api.LocalUser.Value.Id)
+                    return;
+            }
+
+            getOrCreateWaitingList(from).RemoveWhere(s => s.UserID == userId);
+        }
+
+        /// <summary>
+        /// Change the loading state on behalf of an arbitrary user.
+        /// </summary>
+        /// <param name="userId">The user that has its state changed.</param>
+        /// <param name="watching">The user that is being spectated.</param>
+        /// <param name="hasLoaded">The loading of the spectating user.</param>
+        public void ChangeSpectatorLoadingState(int userId, int watching, bool hasLoaded)
+        {
+            if (watchingUsers.Contains(watching) || watching == api.LocalUser.Value.Id)
+            {
+                ((ISpectatorClient)this).UserLoadingStateChanged(userId, watching, hasLoaded);
+
+                if (watching == api.LocalUser.Value.Id)
+                    return;
+            }
+
+            var spectator = getOrCreateWaitingList(watching).SingleOrDefault(s => s.UserID == userId);
+
+            if (spectator == null)
+                return;
+
+            spectator.HasLoaded = hasLoaded;
+        }
+
+        /// <summary>
+        /// Change the beatmap availability on behalf of an arbitrary user.
+        /// </summary>
+        /// <param name="userId">The user that has its state changed.</param>
+        /// <param name="watching">The user that is being spectated.</param>
+        /// <param name="availability">The beatmap availability of the spectating user.</param>
+        public void ChangeSpectatorBeatmapAvailability(int userId, int watching, BeatmapAvailability availability)
+        {
+            if (watchingUsers.Contains(watching) || watching == api.LocalUser.Value.Id)
+            {
+                ((ISpectatorClient)this).UserBeatmapAvailabilityChanged(userId, watching, availability);
+
+                if (watching == api.LocalUser.Value.Id)
+                    return;
+            }
+
+            var spectator = getOrCreateWaitingList(watching).SingleOrDefault(s => s.UserID == userId);
+
+            if (spectator == null)
+                return;
+
+            spectator.BeatmapAvailability = availability;
+        }
+
         protected override Task BeginPlayingInternal(long? scoreToken, SpectatorState state)
         {
             // Track the local user's playing beatmap ID.
@@ -181,16 +269,39 @@ namespace osu.Game.Tests.Visual.Spectator
 
         protected override Task EndPlayingInternal(SpectatorState state) => ((ISpectatorClient)this).UserFinishedPlaying(api.LocalUser.Value.Id, state);
 
-        protected override Task WatchUserInternal(int userId)
+        protected override Task<SpectatorWatchGroup?> WatchUserInternal(int userId)
         {
             // When newly watching a user, the server sends the playing state immediately.
             if (userBeatmapDictionary.ContainsKey(userId))
                 sendPlayingState(userId);
 
+            watchingUsers.Add(userId);
+
+            spectatorWaitingLists.TryGetValue(userId, out var pendingSpectators);
+
+            SpectatorWatchGroup watchGroup = new SpectatorWatchGroup(userId)
+            {
+                Spectators = pendingSpectators?.ToList() ?? new List<SpectatorUser>()
+            };
+
+            return Task.FromResult<SpectatorWatchGroup?>(watchGroup);
+        }
+
+        protected override Task StopWatchingUserInternal(int userId)
+        {
+            watchingUsers.Remove(userId);
             return Task.CompletedTask;
         }
 
-        protected override Task StopWatchingUserInternal(int userId) => Task.CompletedTask;
+        private HashSet<SpectatorUser> getOrCreateWaitingList(int userId)
+        {
+            if (!spectatorWaitingLists.TryGetValue(userId, out HashSet<SpectatorUser>? pendingSpectators))
+                pendingSpectators = spectatorWaitingLists[userId] = new HashSet<SpectatorUser>();
+
+            Debug.Assert(pendingSpectators != null);
+
+            return pendingSpectators;
+        }
 
         private void sendPlayingState(int userId)
         {
@@ -202,6 +313,10 @@ namespace osu.Game.Tests.Visual.Spectator
                 State = SpectatedUserState.Playing
             });
         }
+
+        protected override Task UpdateLoadingStateInternal(int userId, bool hasLoaded) => Task.CompletedTask;
+
+        protected override Task UpdateBeatmapAvailabilityInternal(int userId, BeatmapAvailability beatmapAvailability) => Task.CompletedTask;
 
         protected override async Task DisconnectInternal()
         {
