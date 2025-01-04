@@ -89,6 +89,11 @@ namespace osu.Game.Online.Spectator
         public event Action<SpectatorUser, int>? OnUserChangedState;
 
         /// <summary>
+        /// Called whenever changes are made to a spectating group.
+        /// </summary>
+        public event Action<SpectatorWatchGroup>? OnWatchGroupChanged;
+
+        /// <summary>
         /// Invoked just prior to disconnection requested by the server via <see cref="IStatefulUserHubClient.DisconnectRequested"/>.
         /// </summary>
         public event Action? Disconnecting;
@@ -98,8 +103,8 @@ namespace osu.Game.Online.Spectator
         /// </summary>
         private readonly Dictionary<int, int> watchedUsersRefCounts = new Dictionary<int, int>();
 
-        private readonly Dictionary<int, Bindable<SpectatorWatchGroup>> watchedUsersSpectators = new Dictionary<int, Bindable<SpectatorWatchGroup>>();
-        private readonly Bindable<SpectatorWatchGroup> localSpectators = new Bindable<SpectatorWatchGroup>();
+        private readonly Dictionary<int, SpectatorWatchGroup> watchedUsersSpectators = new Dictionary<int, SpectatorWatchGroup>();
+        private SpectatorWatchGroup localSpectators = null!;
 
         private readonly BindableDictionary<int, SpectatorState> watchedUserStates = new BindableDictionary<int, SpectatorState>();
 
@@ -130,7 +135,7 @@ namespace osu.Game.Online.Spectator
         [BackgroundDependencyLoader]
         private void load()
         {
-            localSpectators.Value = new SpectatorWatchGroup(api.LocalUser.Value.Id);
+            localSpectators = new SpectatorWatchGroup(api.LocalUser.Value.Id);
             IsConnected.BindValueChanged(connected => Schedule(() =>
             {
                 if (connected.NewValue)
@@ -154,7 +159,14 @@ namespace osu.Game.Online.Spectator
                 else
                 {
                     playingUsers.Clear();
-                    localSpectators.Value.Spectators.Clear();
+                    localSpectators.Spectators.Clear();
+
+                    foreach (var watchGroup in watchedUsersSpectators.Values)
+                    {
+                        watchGroup.Spectators.Clear();
+                        OnWatchGroupChanged?.Invoke(watchGroup);
+                    }
+
                     watchedUsersSpectators.Clear();
                     watchedUserStates.Clear();
                 }
@@ -222,7 +234,7 @@ namespace osu.Game.Online.Spectator
                 if (isLocalUser(user.UserID))
                     return;
 
-                var watchGroup = getWatchGroup(watchedUserId)?.Value;
+                var watchGroup = getWatchGroup(watchedUserId);
                 IList<SpectatorUser>? spectators = watchGroup?.Spectators;
 
                 if (spectators == null)
@@ -349,7 +361,7 @@ namespace osu.Game.Online.Spectator
                 return;
             }
 
-            watchedUsersSpectators[userId] = new Bindable<SpectatorWatchGroup>();
+            watchedUsersSpectators[userId] = new SpectatorWatchGroup(userId);
 
             invoke();
 
@@ -384,8 +396,8 @@ namespace osu.Game.Online.Spectator
 
                 if (watchedUsersSpectators.TryGetValue(userId, out var spectators))
                 {
-                    spectators.Value.Spectators.Clear();
-                    spectators.Value = null;
+                    spectators.Spectators.Clear();
+                    OnWatchGroupChanged?.Invoke(spectators);
                 }
 
                 watchedUsersSpectators.Remove(userId);
@@ -410,7 +422,7 @@ namespace osu.Game.Online.Spectator
             UpdateBeatmapAvailabilityInternal(userId, beatmapAvailability);
         }
 
-        public IBindable<SpectatorWatchGroup>? GetSpectators(int userId) => getWatchGroup(userId);
+        public SpectatorWatchGroup? GetSpectators(int userId) => getWatchGroup(userId);
 
         protected abstract Task BeginPlayingInternal(long? scoreToken, SpectatorState state);
 
@@ -442,7 +454,7 @@ namespace osu.Game.Online.Spectator
 
         private bool isLocalUser(int userId) => userId == api.LocalUser.Value.OnlineID;
 
-        private Bindable<SpectatorWatchGroup>? getWatchGroup(int userId)
+        private SpectatorWatchGroup? getWatchGroup(int userId)
         {
             if (userId <= APIUser.SYSTEM_USER_ID)
                 return null;
@@ -462,10 +474,16 @@ namespace osu.Game.Online.Spectator
                 return;
 
             var watchGroup = getWatchGroup(watchedUserId);
-            IList<SpectatorUser>? spectators = watchGroup?.Value.Spectators;
+            IList<SpectatorUser>? spectators = watchGroup?.Spectators;
 
-            spectators?.Add(user);
+            if (spectators == null)
+                return;
+
+            spectators.Add(user);
             OnUserBeganWatching?.Invoke(user, watchedUserId);
+
+            Debug.Assert(watchGroup != null);
+            OnWatchGroupChanged?.Invoke(watchGroup);
         }
 
         private void editSpectatorUser(int userId, int watchedUserId, Action<SpectatorUser> editAction)
@@ -474,7 +492,7 @@ namespace osu.Game.Online.Spectator
                 return;
 
             var watchGroup = getWatchGroup(watchedUserId);
-            IList<SpectatorUser>? spectators = watchGroup?.Value.Spectators;
+            IList<SpectatorUser>? spectators = watchGroup?.Spectators;
 
             var user = spectators?.FirstOrDefault(u => u.UserID == userId);
 
@@ -483,6 +501,9 @@ namespace osu.Game.Online.Spectator
 
             editAction(user);
             OnUserChangedState?.Invoke(user, watchedUserId);
+
+            Debug.Assert(watchGroup != null);
+            OnWatchGroupChanged?.Invoke(watchGroup);
         }
 
         /// <summary>
@@ -505,12 +526,15 @@ namespace osu.Game.Online.Spectator
 
             Schedule(() =>
             {
-                var localWatchGroup = getWatchGroup(watchGroup.UserID);
-
-                if (localWatchGroup == null)
+                if (userId <= APIUser.SYSTEM_USER_ID)
                     return;
 
-                localWatchGroup.Value = watchGroup;
+                if (isLocalUser(userId))
+                    localSpectators = watchGroup;
+                else if (watchedUsersRefCounts.ContainsKey(userId))
+                    watchedUsersSpectators[userId] = watchGroup;
+
+                OnWatchGroupChanged?.Invoke(watchGroup);
             });
         }
 
