@@ -12,7 +12,10 @@ using osu.Framework.Development;
 using osu.Framework.Graphics;
 using osu.Framework.Logging;
 using osu.Game.Beatmaps;
+using osu.Game.Database;
 using osu.Game.Online.API;
+using osu.Game.Online.API.Requests.Responses;
+using osu.Game.Online.Rooms;
 using osu.Game.Replays.Legacy;
 using osu.Game.Rulesets.Replays;
 using osu.Game.Rulesets.Replays.Types;
@@ -71,6 +74,21 @@ namespace osu.Game.Online.Spectator
         public event Action<int, long>? OnUserScoreProcessed;
 
         /// <summary>
+        /// Called whenever a user starts watching, in the context of spectating someone or when playing.
+        /// </summary>
+        public event Action<SpectatorUser, int>? OnUserBeganWatching;
+
+        /// <summary>
+        /// Called whenever a user stops watching, in the context of spectating someone, or when playing.
+        /// </summary>
+        public event Action<SpectatorUser, int>? OnUserStoppedWatching;
+
+        /// <summary>
+        /// Called when a user changes its state, in the context of spectating someone, or when playing.
+        /// </summary>
+        public event Action<SpectatorUser, int>? OnUserChangedState;
+
+        /// <summary>
         /// Invoked just prior to disconnection requested by the server via <see cref="IStatefulUserHubClient.DisconnectRequested"/>.
         /// </summary>
         public event Action? Disconnecting;
@@ -79,6 +97,9 @@ namespace osu.Game.Online.Spectator
         /// A dictionary containing all users currently being watched, with the number of watching components for each user.
         /// </summary>
         private readonly Dictionary<int, int> watchedUsersRefCounts = new Dictionary<int, int>();
+
+        private readonly Dictionary<int, Bindable<SpectatorWatchGroup>> watchedUsersSpectators = new Dictionary<int, Bindable<SpectatorWatchGroup>>();
+        private readonly Bindable<SpectatorWatchGroup> localSpectators = new Bindable<SpectatorWatchGroup>();
 
         private readonly BindableDictionary<int, SpectatorState> watchedUserStates = new BindableDictionary<int, SpectatorState>();
 
@@ -100,9 +121,16 @@ namespace osu.Game.Online.Spectator
 
         private const int max_pending_frames = 30;
 
+        [Resolved]
+        private IAPIProvider api { get; set; } = null!;
+
+        [Resolved]
+        private UserLookupCache userLookupCache { get; set; } = null!;
+
         [BackgroundDependencyLoader]
         private void load()
         {
+            localSpectators.Value = new SpectatorWatchGroup(api.LocalUser.Value.Id);
             IsConnected.BindValueChanged(connected => Schedule(() =>
             {
                 if (connected.NewValue)
@@ -126,6 +154,8 @@ namespace osu.Game.Online.Spectator
                 else
                 {
                     playingUsers.Clear();
+                    localSpectators.Value.Spectators.Clear();
+                    watchedUsersSpectators.Clear();
                     watchedUserStates.Clear();
                 }
             }), true);
@@ -176,6 +206,52 @@ namespace osu.Game.Online.Spectator
         {
             Schedule(() => OnUserScoreProcessed?.Invoke(userId, scoreId));
 
+            return Task.CompletedTask;
+        }
+
+        async Task ISpectatorClient.UserBeganWatching(SpectatorUser user, int watchedUserId)
+        {
+            await populateUsers([user]).ConfigureAwait(false);
+            Schedule(() => addSpectatorUser(user, watchedUserId));
+        }
+
+        Task ISpectatorClient.UserStoppedWatching(SpectatorUser user, int watchedUserId)
+        {
+            Schedule(() =>
+            {
+                if (isLocalUser(user.UserID))
+                    return;
+
+                var watchGroup = getWatchGroup(watchedUserId)?.Value;
+                IList<SpectatorUser>? spectators = watchGroup?.Spectators;
+
+                if (spectators == null)
+                    return;
+
+                for (int i = 0; i < spectators.Count; i++)
+                {
+                    if (spectators[i].UserID != user.UserID)
+                        continue;
+
+                    spectators.RemoveAt(i);
+                    break;
+                }
+
+                OnUserStoppedWatching?.Invoke(user, watchedUserId);
+            });
+
+            return Task.CompletedTask;
+        }
+
+        Task ISpectatorClient.UserBeatmapAvailabilityChanged(int userId, int watchedUserId, BeatmapAvailability availability)
+        {
+            Schedule(() => editSpectatorUser(userId, watchedUserId, u => u.BeatmapAvailability = availability));
+            return Task.CompletedTask;
+        }
+
+        Task ISpectatorClient.UserLoadingStateChanged(int userId, int watchedUserId, bool isLoaded)
+        {
+            Schedule(() => editSpectatorUser(userId, watchedUserId, u => u.HasLoaded = isLoaded));
             return Task.CompletedTask;
         }
 
@@ -273,7 +349,22 @@ namespace osu.Game.Online.Spectator
                 return;
             }
 
-            WatchUserInternal(userId);
+            watchedUsersSpectators[userId] = new Bindable<SpectatorWatchGroup>();
+
+            invoke();
+
+            async void invoke()
+            {
+                try
+                {
+                    var watchGroup = await WatchUserInternal(userId).ConfigureAwait(false);
+                    await dispatchWatchGroup(watchGroup, userId).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e, $"Failed to watch user {userId}.");
+                }
+            }
         }
 
         public void StopWatchingUser(int userId)
@@ -290,9 +381,36 @@ namespace osu.Game.Online.Spectator
 
                 watchedUsersRefCounts.Remove(userId);
                 watchedUserStates.Remove(userId);
+
+                if (watchedUsersSpectators.TryGetValue(userId, out var spectators))
+                {
+                    spectators.Value.Spectators.Clear();
+                    spectators.Value = null;
+                }
+
+                watchedUsersSpectators.Remove(userId);
+
                 StopWatchingUserInternal(userId);
             });
         }
+
+        public void UpdateLoadingState(int userId, bool hasLoaded)
+        {
+            if (!watchedUsersRefCounts.ContainsKey(userId))
+                return;
+
+            UpdateLoadingStateInternal(userId, hasLoaded);
+        }
+
+        public void UpdateBeatmapAvailability(int userId, BeatmapAvailability beatmapAvailability)
+        {
+            if (!watchedUsersRefCounts.ContainsKey(userId))
+                return;
+
+            UpdateBeatmapAvailabilityInternal(userId, beatmapAvailability);
+        }
+
+        public IBindable<SpectatorWatchGroup>? GetSpectators(int userId) => getWatchGroup(userId);
 
         protected abstract Task BeginPlayingInternal(long? scoreToken, SpectatorState state);
 
@@ -300,9 +418,13 @@ namespace osu.Game.Online.Spectator
 
         protected abstract Task EndPlayingInternal(SpectatorState state);
 
-        protected abstract Task WatchUserInternal(int userId);
+        protected abstract Task<SpectatorWatchGroup?> WatchUserInternal(int userId);
 
         protected abstract Task StopWatchingUserInternal(int userId);
+
+        protected abstract Task UpdateLoadingStateInternal(int userId, bool hasLoaded);
+
+        protected abstract Task UpdateBeatmapAvailabilityInternal(int userId, BeatmapAvailability beatmapAvailability);
 
         protected virtual Task DisconnectInternal()
         {
@@ -316,6 +438,97 @@ namespace osu.Game.Online.Spectator
 
             if (pendingFrames.Count > 0 && Time.Current - lastPurgeTime > TIME_BETWEEN_SENDS)
                 purgePendingFrames();
+        }
+
+        private bool isLocalUser(int userId) => userId == api.LocalUser.Value.OnlineID;
+
+        private Bindable<SpectatorWatchGroup>? getWatchGroup(int userId)
+        {
+            if (userId <= APIUser.SYSTEM_USER_ID)
+                return null;
+
+            if (isLocalUser(userId))
+                return localSpectators;
+
+            if (watchedUsersRefCounts.ContainsKey(userId))
+                return watchedUsersSpectators[userId];
+
+            return null;
+        }
+
+        private void addSpectatorUser(SpectatorUser user, int watchedUserId)
+        {
+            if (isLocalUser(user.UserID))
+                return;
+
+            var watchGroup = getWatchGroup(watchedUserId);
+            IList<SpectatorUser>? spectators = watchGroup?.Value.Spectators;
+
+            spectators?.Add(user);
+            OnUserBeganWatching?.Invoke(user, watchedUserId);
+        }
+
+        private void editSpectatorUser(int userId, int watchedUserId, Action<SpectatorUser> editAction)
+        {
+            if (isLocalUser(userId))
+                return;
+
+            var watchGroup = getWatchGroup(watchedUserId);
+            IList<SpectatorUser>? spectators = watchGroup?.Value.Spectators;
+
+            var user = spectators?.FirstOrDefault(u => u.UserID == userId);
+
+            if (user == null)
+                return;
+
+            editAction(user);
+            OnUserChangedState?.Invoke(user, watchedUserId);
+        }
+
+        /// <summary>
+        /// Populates the spectators in the given <see cref="SpectatorWatchGroup"/> and store it locally.
+        /// </summary>
+        /// <param name="watchGroup">The spectator watch group.</param>
+        /// <param name="userId">The user id of the spectator watch group.</param>
+        /// <remarks>The <c>watchGroup</c> can be <c>null</c> if the server does not support reporting about other spectators.</remarks>
+        private async Task dispatchWatchGroup(SpectatorWatchGroup? watchGroup, int userId)
+        {
+            if (watchGroup == null) // can be removed 20250703
+            {
+                Logger.Log($"Server did not return any spectator watch group for user {userId}, and might not report anything about other spectators going forwards.", LoggingTarget.Network);
+                return;
+            }
+
+            Debug.Assert(watchGroup.UserID == userId);
+
+            await populateUsers(watchGroup.Spectators).ConfigureAwait(false);
+
+            Schedule(() =>
+            {
+                var localWatchGroup = getWatchGroup(watchGroup.UserID);
+
+                if (localWatchGroup == null)
+                    return;
+
+                localWatchGroup.Value = watchGroup;
+            });
+        }
+
+        /// <summary>
+        /// Populates the <see cref="APIUser"/> for a given collection of <see cref="SpectatorUser"/>s.
+        /// </summary>
+        /// <param name="spectators">The <see cref="SpectatorUser"/>s to populate.</param>
+        private async Task populateUsers(IEnumerable<SpectatorUser> spectators)
+        {
+            var apiUsers = await userLookupCache.GetUsersAsync(spectators.Select(u => u.UserID).Distinct().ToArray()).ConfigureAwait(false);
+
+            Dictionary<int, APIUser> users = apiUsers.Where(u => u != null).Cast<APIUser>().ToDictionary(user => user.Id);
+
+            foreach (var spectator in spectators)
+            {
+                if (users.TryGetValue(spectator.UserID, out var user))
+                    spectator.User = user;
+            }
         }
 
         private void purgePendingFrames()

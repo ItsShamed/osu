@@ -9,6 +9,7 @@ using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Game.Online.API;
 using osu.Game.Online.Multiplayer;
+using osu.Game.Online.Rooms;
 
 namespace osu.Game.Online.Spectator
 {
@@ -42,6 +43,10 @@ namespace osu.Game.Online.Spectator
                     connection.On<int, FrameDataBundle>(nameof(ISpectatorClient.UserSentFrames), ((ISpectatorClient)this).UserSentFrames);
                     connection.On<int, SpectatorState>(nameof(ISpectatorClient.UserFinishedPlaying), ((ISpectatorClient)this).UserFinishedPlaying);
                     connection.On<int, long>(nameof(ISpectatorClient.UserScoreProcessed), ((ISpectatorClient)this).UserScoreProcessed);
+                    connection.On<SpectatorUser, int>(nameof(ISpectatorClient.UserBeganWatching), ((ISpectatorClient)this).UserBeganWatching);
+                    connection.On<SpectatorUser, int>(nameof(ISpectatorClient.UserStoppedWatching), ((ISpectatorClient)this).UserStoppedWatching);
+                    connection.On<int, int, BeatmapAvailability>(nameof(ISpectatorClient.UserBeatmapAvailabilityChanged), ((ISpectatorClient)this).UserBeatmapAvailabilityChanged);
+                    connection.On<int, int, bool>(nameof(ISpectatorClient.UserLoadingStateChanged), ((ISpectatorClient)this).UserLoadingStateChanged);
                     connection.On(nameof(IStatefulUserHubClient.DisconnectRequested), ((IStatefulUserHubClient)this).DisconnectRequested);
                 };
 
@@ -95,14 +100,14 @@ namespace osu.Game.Online.Spectator
             return connection.InvokeAsync(nameof(ISpectatorServer.EndPlaySession), state);
         }
 
-        protected override Task WatchUserInternal(int userId)
+        protected override async Task<SpectatorWatchGroup?> WatchUserInternal(int userId)
         {
             if (!IsConnected.Value)
-                return Task.CompletedTask;
+                throw new OperationCanceledException();
 
             Debug.Assert(connection != null);
 
-            return connection.InvokeAsync(nameof(ISpectatorServer.StartWatchingUser), userId);
+            return await connection.InvokeAsync<SpectatorWatchGroup?>(nameof(ISpectatorServer.StartWatchingUser), userId).ConfigureAwait(false);
         }
 
         protected override Task StopWatchingUserInternal(int userId)
@@ -113,6 +118,26 @@ namespace osu.Game.Online.Spectator
             Debug.Assert(connection != null);
 
             return connection.InvokeAsync(nameof(ISpectatorServer.EndWatchingUser), userId);
+        }
+
+        protected override Task UpdateLoadingStateInternal(int userId, bool hasLoaded)
+        {
+            if (!IsConnected.Value)
+                return Task.CompletedTask;
+
+            Debug.Assert(connection != null);
+
+            return connection.InvokeAsync(nameof(ISpectatorServer.SendLoadingState), userId, hasLoaded);
+        }
+
+        protected override Task UpdateBeatmapAvailabilityInternal(int userId, BeatmapAvailability beatmapAvailability)
+        {
+            if (!IsConnected.Value)
+                return Task.CompletedTask;
+
+            Debug.Assert(connection != null);
+
+            return connection.InvokeAsync(nameof(ISpectatorServer.SendBeatmapAvailability), userId, beatmapAvailability);
         }
 
         protected override async Task DisconnectInternal()
