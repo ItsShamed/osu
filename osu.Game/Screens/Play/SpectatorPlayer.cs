@@ -136,7 +136,7 @@ namespace osu.Game.Screens.Play
                 SpectatorClient.OnNewFrames -= userSentFrames;
         }
 
-        protected override SpectatorList? CreateSpectatorList() => new SpectatorList
+        protected override SpectatorList CreateSpectatorList() => new SpectatorList
         {
             Anchor = Anchor.TopLeft,
             Origin = Anchor.TopLeft,
