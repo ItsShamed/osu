@@ -363,9 +363,7 @@ namespace osu.Game.Online.Spectator
 
             watchedUsersSpectators[userId] = new SpectatorWatchGroup(userId);
 
-            invoke();
-
-            async void invoke()
+            Task.Run(async () =>
             {
                 try
                 {
@@ -376,7 +374,7 @@ namespace osu.Game.Online.Spectator
                 {
                     Logger.Error(e, $"Failed to watch user {userId}.");
                 }
-            }
+            });
         }
 
         public void StopWatchingUser(int userId)
