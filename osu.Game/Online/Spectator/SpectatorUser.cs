@@ -5,6 +5,7 @@ using System;
 using MessagePack;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Online.Rooms;
+using osu.Game.Utils;
 
 namespace osu.Game.Online.Spectator
 {
@@ -13,7 +14,7 @@ namespace osu.Game.Online.Spectator
     /// </summary>
     [Serializable]
     [MessagePackObject]
-    public class SpectatorUser : IEquatable<SpectatorUser>
+    public class SpectatorUser : IEquatable<SpectatorUser>, IDeepCloneable<SpectatorUser>
     {
         /// <summary>
         /// The online ID of the user.
@@ -48,6 +49,12 @@ namespace osu.Game.Online.Spectator
 
             return UserID == other.UserID;
         }
+
+        public SpectatorUser DeepClone() => new SpectatorUser(UserID)
+        {
+            HasLoaded = HasLoaded,
+            BeatmapAvailability = new BeatmapAvailability(BeatmapAvailability.State, BeatmapAvailability.DownloadProgress)
+        };
 
         public override string ToString() => $"user: {UserID}, loaded: {HasLoaded}, availability: ({BeatmapAvailability})";
     }

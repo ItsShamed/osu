@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MessagePack;
+using osu.Game.Utils;
 
 namespace osu.Game.Online.Spectator
 {
@@ -12,7 +14,7 @@ namespace osu.Game.Online.Spectator
     /// </summary>
     [Serializable]
     [MessagePackObject]
-    public class SpectatorWatchGroup
+    public class SpectatorWatchGroup : IDeepCloneable<SpectatorWatchGroup>
     {
         /// <summary>
         /// The ID of the user who is being watched.
@@ -30,5 +32,10 @@ namespace osu.Game.Online.Spectator
         {
             UserID = userID;
         }
+
+        public SpectatorWatchGroup DeepClone() => new SpectatorWatchGroup(UserID)
+        {
+            Spectators = new List<SpectatorUser>(Spectators.Select(s => s.DeepClone()))
+        };
     }
 }
