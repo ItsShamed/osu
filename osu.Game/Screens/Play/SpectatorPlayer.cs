@@ -12,6 +12,7 @@ using osu.Game.Online.Spectator;
 using osu.Game.Rulesets.Replays;
 using osu.Game.Rulesets.Replays.Types;
 using osu.Game.Scoring;
+using osu.Game.Screens.Play.HUD;
 using osu.Game.Screens.Ranking;
 
 namespace osu.Game.Screens.Play
@@ -134,5 +135,11 @@ namespace osu.Game.Screens.Play
             if (SpectatorClient.IsNotNull())
                 SpectatorClient.OnNewFrames -= userSentFrames;
         }
+
+        protected override SpectatorList? CreateSpectatorList() => new SpectatorList
+        {
+            Anchor = Anchor.TopLeft,
+            Origin = Anchor.TopLeft,
+        };
     }
 }

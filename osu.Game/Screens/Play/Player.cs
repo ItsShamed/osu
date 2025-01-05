@@ -393,6 +393,7 @@ namespace osu.Game.Screens.Play
             IsBreakTime.BindValueChanged(onBreakTimeChanged, true);
 
             loadLeaderboard();
+            loadSpectatorList();
         }
 
         protected virtual GameplayClockContainer CreateGameplayClockContainer(WorkingBeatmap beatmap, double gameplayStart) => new MasterGameplayClockContainer(beatmap, gameplayStart);
@@ -892,6 +893,29 @@ namespace osu.Game.Screens.Play
                 return scoreCopy.ScoreInfo;
             });
         }
+
+        #region Spectator list
+
+        private void loadSpectatorList()
+        {
+            var spectatorList = CreateSpectatorList();
+
+            if (spectatorList != null)
+            {
+                LoadComponentAsync(spectatorList, list =>
+                {
+                    if (!LoadedBeatmapSuccessfully)
+                        return;
+
+                    HUDOverlay.LeaderboardFlow.Add(spectatorList);
+                });
+            }
+        }
+
+        [CanBeNull]
+        protected virtual SpectatorList CreateSpectatorList() => null;
+
+        #endregion
 
         #region Gameplay leaderboard
 
