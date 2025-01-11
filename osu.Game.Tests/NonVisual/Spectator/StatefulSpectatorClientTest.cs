@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System.Linq;
 using NUnit.Framework;
 using osu.Framework.Testing;
 using osu.Game.Online.Rooms;
@@ -130,6 +131,25 @@ namespace osu.Game.Tests.NonVisual.Spectator
             AddSpectator(28);
             AddSpectator(28);
             CheckSpectatorCount(2);
+
+            StopWatching();
+        }
+
+        [Test]
+        public void TestResetOnFinish()
+        {
+            AddSpectator(42);
+            SetBeatmapAvailability(42, BeatmapAvailability.LocallyAvailable());
+            SetLoadingState(42, true);
+
+            Watch();
+
+            AddStep("send user start playing", () => SpectatorClient.SendStartPlay(SPECTATED_ID, 1));
+
+            AddStep("send user finished playing", () => SpectatorClient.SendEndPlay(SPECTATED_ID));
+
+            CheckBeatmapAvailability(42, BeatmapAvailability.Unknown());
+            CheckLoadingState(42, false);
 
             StopWatching();
         }
