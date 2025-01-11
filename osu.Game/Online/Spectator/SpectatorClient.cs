@@ -240,14 +240,7 @@ namespace osu.Game.Online.Spectator
                 if (spectators == null)
                     return;
 
-                for (int i = 0; i < spectators.Count; i++)
-                {
-                    if (spectators[i].UserID != user.UserID)
-                        continue;
-
-                    spectators.RemoveAt(i);
-                    break;
-                }
+                spectators.Remove(user);
 
                 OnUserStoppedWatching?.Invoke(user, watchedUserId);
             });
