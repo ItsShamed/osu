@@ -470,6 +470,9 @@ namespace osu.Game.Online.Spectator
             if (spectators == null)
                 return;
 
+            if (spectators.Contains(user))
+                return;
+
             spectators.Add(user);
             OnUserBeganWatching?.Invoke(user, watchedUserId);
 
