@@ -124,6 +124,9 @@ namespace osu.Game.Screens.Play.HUD
             if (watched != TrackedUserId)
                 return;
 
+            if (flow.Any(i => i.UserID == user.UserID))
+                return;
+
             flow.Add(new SpectatorListItem(user, this));
             spectatorHeader.Text = $"Spectators ({spectatorClient?.GetSpectators(TrackedUserId)?.Spectators.Count ?? 0})";
 
