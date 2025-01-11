@@ -86,12 +86,12 @@ namespace osu.Game.Screens.Play.HUD
 
         protected override void PopIn()
         {
-            this.FadeInFromZero(250);
+            this.FadeInFromZero(300);
         }
 
         protected override void PopOut()
         {
-            this.FadeOutFromOne(250);
+            this.FadeOutFromOne(300);
         }
 
         protected override void Update()
@@ -139,7 +139,7 @@ namespace osu.Game.Screens.Play.HUD
             if (watched != TrackedUserId)
                 return;
 
-            flow.SingleOrDefault(i => i.UserID == user.UserID)?.PopOut();
+            flow.SingleOrDefault(i => i.UserID == user.UserID)?.Remove();
             spectatorHeader.Text = $"Spectators ({spectatorClient?.GetSpectators(TrackedUserId)?.Spectators.Count ?? 0})";
 
             sorting.Invalidate();
@@ -157,7 +157,7 @@ namespace osu.Game.Screens.Play.HUD
             if (watchGroup == null)
             {
                 foreach (var listItem in flow)
-                    listItem.PopOut();
+                    listItem.Remove();
                 spectatorHeader.Text = "Spectators (0)";
                 updateVisibility();
                 populated = false;
@@ -262,10 +262,10 @@ namespace osu.Game.Screens.Play.HUD
                 };
             }
 
-            public void PopOut()
+            public void Remove()
             {
-                this.FadeOutFromOne(450f, Easing.OutQuint)
-                    .ScaleTo(0.5f, 450f, Easing.OutQuint)
+                this.FadeOutFromOne(250f, Easing.OutQuint)
+                    .ScaleTo(0.5f, 250f, Easing.OutQuint)
                     .Then().Expire();
             }
 
