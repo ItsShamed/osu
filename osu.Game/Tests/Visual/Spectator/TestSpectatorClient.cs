@@ -48,7 +48,7 @@ namespace osu.Game.Tests.Visual.Spectator
         private readonly Dictionary<int, int> userNextFrameDictionary = new Dictionary<int, int>();
 
         private readonly HashSet<int> watchingUsers = new HashSet<int>();
-        private readonly Dictionary<int, HashSet<SpectatorUser>> spectatorWaitingLists = new Dictionary<int, HashSet<SpectatorUser>>();
+        private readonly Dictionary<int, List<SpectatorUser>> spectatorWaitingLists = new Dictionary<int, List<SpectatorUser>>();
 
         [Resolved]
         private IAPIProvider api { get; set; } = null!;
@@ -178,7 +178,9 @@ namespace osu.Game.Tests.Visual.Spectator
                     return;
             }
 
-            getOrCreateWaitingList(to).Add(new SpectatorUser(userId));
+            var waitingList = getOrCreateWaitingList(to);
+            if (waitingList.All(u => u.UserID != userId))
+                getOrCreateWaitingList(to).Add(new SpectatorUser(userId));
         }
 
         /// <summary>
@@ -196,7 +198,7 @@ namespace osu.Game.Tests.Visual.Spectator
                     return;
             }
 
-            getOrCreateWaitingList(from).RemoveWhere(s => s.UserID == userId);
+            getOrCreateWaitingList(from).RemoveAll(u => u.UserID == userId);
         }
 
         /// <summary>
@@ -293,10 +295,10 @@ namespace osu.Game.Tests.Visual.Spectator
             return Task.CompletedTask;
         }
 
-        private HashSet<SpectatorUser> getOrCreateWaitingList(int userId)
+        private List<SpectatorUser> getOrCreateWaitingList(int userId)
         {
-            if (!spectatorWaitingLists.TryGetValue(userId, out HashSet<SpectatorUser>? pendingSpectators))
-                pendingSpectators = spectatorWaitingLists[userId] = new HashSet<SpectatorUser>();
+            if (!spectatorWaitingLists.TryGetValue(userId, out List<SpectatorUser>? pendingSpectators))
+                pendingSpectators = spectatorWaitingLists[userId] = new List<SpectatorUser>();
 
             Debug.Assert(pendingSpectators != null);
 
