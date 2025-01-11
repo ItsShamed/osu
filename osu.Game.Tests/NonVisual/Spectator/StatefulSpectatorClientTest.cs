@@ -114,5 +114,24 @@ namespace osu.Game.Tests.NonVisual.Spectator
 
             StopWatching();
         }
+
+        [Test]
+        public void TestDuplicateSpectators()
+        {
+            AddSpectator(42);
+
+            Watch();
+
+            AddUntilStep("wait for user 42 to appear", () => GetSpectators(SPECTATED_ID)?.Any(u => u.UserID == 42) ?? false);
+
+            AddSpectator(42);
+            CheckSpectatorCount(1);
+
+            AddSpectator(28);
+            AddSpectator(28);
+            CheckSpectatorCount(2);
+
+            StopWatching();
+        }
     }
 }
