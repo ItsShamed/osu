@@ -196,7 +196,15 @@ namespace osu.Game.Online.Spectator
                 playingUsers.Remove(userId);
 
                 if (watchedUsersRefCounts.ContainsKey(userId))
+                {
                     watchedUserStates[userId] = state;
+
+                    foreach (var spectators in watchedUsersSpectators[userId].Spectators)
+                    {
+                        spectators.BeatmapAvailability = BeatmapAvailability.Unknown();
+                        spectators.HasLoaded = false;
+                    }
+                }
 
                 OnUserFinishedPlaying?.Invoke(userId, state);
             });
@@ -339,6 +347,12 @@ namespace osu.Game.Online.Spectator
                     currentState.State = SpectatedUserState.Failed;
                 else
                     currentState.State = SpectatedUserState.Quit;
+
+                foreach (var spectator in localSpectators.Spectators)
+                {
+                    spectator.BeatmapAvailability = BeatmapAvailability.Unknown();
+                    spectator.HasLoaded = false;
+                }
 
                 EndPlayingInternal(currentState);
             });
