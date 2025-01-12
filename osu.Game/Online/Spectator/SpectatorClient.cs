@@ -251,6 +251,10 @@ namespace osu.Game.Online.Spectator
                 spectators.Remove(user);
 
                 OnUserStoppedWatching?.Invoke(user, watchedUserId);
+
+                Debug.Assert(watchGroup != null);
+
+                OnWatchGroupChanged?.Invoke(watchGroup);
             });
 
             return Task.CompletedTask;
