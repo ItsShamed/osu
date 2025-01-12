@@ -279,8 +279,15 @@ namespace osu.Game.Screens.Play.HUD
 
                 this.FadeInFromZero(0.45, Easing.OutQuint).ScaleTo(1, 0.45, Easing.OutQuint);
 
-                if (spectatorClient != null)
-                    spectatorClient.OnUserChangedState += onUserChangedState;
+                if (spectatorClient == null)
+                    return;
+
+                spectatorClient.OnUserChangedState += onUserChangedState;
+
+                // By the time we load, the user might have already changed state
+                var user = spectatorClient.GetSpectators(list.TrackedUserId)?.Spectators.SingleOrDefault(u => u.UserID == UserID);
+                if (user != null)
+                    onUserChangedState(user, list.TrackedUserId);
             }
 
             protected override void Update()
