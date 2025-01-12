@@ -261,7 +261,7 @@ namespace osu.Game.Screens.Play.HUD
                 {
                     Direction = FillDirection.Horizontal,
                     AutoSizeAxes = Axes.Both,
-                    Spacing = new Vector2(6),
+                    Spacing = new Vector2(4),
                     Children = new Drawable[]
                     {
                         text = new OsuSpriteText
@@ -272,9 +272,10 @@ namespace osu.Game.Screens.Play.HUD
                         },
                         spinner = new LoadingSpinner
                         {
-                            Size = new Vector2(10),
-                            Anchor = Anchor.CentreLeft,
-                            Origin = Anchor.CentreLeft,
+                            Size = new Vector2(12),
+                            Anchor = Anchor.BottomLeft,
+                            Origin = Anchor.BottomLeft,
+                            Padding = new MarginPadding { Bottom = 2f }, // match baseline with text
                             State = { Value = Visibility.Hidden }
                         }
                     },
