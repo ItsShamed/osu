@@ -113,6 +113,9 @@ namespace osu.Game.Screens.Play.HUD
             if (sorting.IsValid)
                 return;
 
+            if (spectatorCount > max_spectators && !IgnoreSpectatorLimit)
+                return;
+
             var orderedItems = flow.OrderByDescending(i => i.BeatmapAvailability.State)
                                    .ThenBy(i => i.UserID)
                                    .ToList();
@@ -136,10 +139,10 @@ namespace osu.Game.Screens.Play.HUD
                 return;
 
             flow.Add(new SpectatorListItem(user, this));
-            spectatorHeader.Text = $"Spectators ({spectatorClient?.GetSpectators(TrackedUserId)?.Spectators.Count ?? 0})";
+            spectatorHeader.Text = $"Spectators ({spectatorCount})";
 
-            sorting.Invalidate();
             updateVisibility();
+            sorting.Invalidate();
         }
 
         private void removeSpectator(SpectatorUser user, int watched)
@@ -148,10 +151,10 @@ namespace osu.Game.Screens.Play.HUD
                 return;
 
             flow.SingleOrDefault(i => i.UserID == user.UserID)?.Remove();
-            spectatorHeader.Text = $"Spectators ({spectatorClient?.GetSpectators(TrackedUserId)?.Spectators.Count ?? 0})";
+            spectatorHeader.Text = $"Spectators ({spectatorCount})";
 
-            sorting.Invalidate();
             updateVisibility();
+            sorting.Invalidate();
         }
 
         private void updateState()
@@ -186,7 +189,7 @@ namespace osu.Game.Screens.Play.HUD
 
         private void updateVisibility()
         {
-            if (spectatorClient?.GetSpectators(TrackedUserId)?.Spectators.Count > 0)
+            if (spectatorCount > 0)
             {
                 if (State.Value != Visibility.Visible)
                     Show();
@@ -203,8 +206,10 @@ namespace osu.Game.Screens.Play.HUD
                 expandList();
         }
 
-        private void collapseList() => flow.FadeOutFromOne(100);
-        private void expandList() => flow.FadeInFromZero(100);
+        private int spectatorCount => spectatorClient?.GetSpectators(TrackedUserId)?.Spectators.Count ?? 0;
+
+        private void collapseList() => flow.FadeOut(100);
+        private void expandList() => flow.FadeIn(100);
 
         public partial class SpectatorListItem : CompositeDrawable
         {
@@ -234,6 +239,8 @@ namespace osu.Game.Screens.Play.HUD
             {
                 this.list = list;
                 UserID = user.UserID;
+                BeatmapAvailability = user.BeatmapAvailability;
+                HasLoaded = user.HasLoaded;
 
                 if (user.User == null)
                 {
@@ -248,8 +255,6 @@ namespace osu.Game.Screens.Play.HUD
 
                 Name = $"Spectator list item \"{username}\" ({UserID})";
 
-                Alpha = 0;
-                Scale = new Vector2(0.5f);
                 AutoSizeAxes = Axes.Both;
 
                 InternalChild = new FillFlowContainer
@@ -287,7 +292,7 @@ namespace osu.Game.Screens.Play.HUD
             {
                 base.LoadComplete();
 
-                this.FadeInFromZero(0.45, Easing.OutQuint).ScaleTo(1, 0.45, Easing.OutQuint);
+                text.Colour = colours.Gray5;
 
                 if (spectatorClient == null)
                     return;
