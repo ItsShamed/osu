@@ -57,6 +57,7 @@ namespace osu.Game.Screens.Play
         private Container beatmapPanelContainer = null!;
         private RoundedButton watchButton = null!;
         private SettingsCheckbox automaticDownload = null!;
+        private OsuSpriteText spectatorCountText = null!;
 
         private readonly APIUser targetUser;
 
@@ -79,7 +80,7 @@ namespace osu.Game.Screens.Play
         }
 
         [BackgroundDependencyLoader]
-        private void load(OsuConfigManager config)
+        private void load(OsuConfigManager config, OsuColour colours)
         {
             InternalChild = new Container
             {
@@ -105,6 +106,8 @@ namespace osu.Game.Screens.Play
                         Anchor = Anchor.Centre,
                         Origin = Anchor.Centre,
                         Spacing = new Vector2(15),
+                        LayoutDuration = 500f,
+                        LayoutEasing = Easing.OutQuint,
                         Children = new Drawable[]
                         {
                             new OsuSpriteText
@@ -145,6 +148,13 @@ namespace osu.Game.Screens.Play
                                     },
                                 }
                             },
+                            spectatorCountText = new OsuSpriteText
+                            {
+                                Anchor = Anchor.Centre,
+                                Origin = Anchor.Centre,
+                                Colour = colours.Yellow,
+                                Alpha = 0,
+                            },
                             automaticDownload = new SettingsCheckbox
                             {
                                 LabelText = OnlineSettingsStrings.AutomaticallyDownloadMissingBeatmaps,
@@ -171,6 +181,15 @@ namespace osu.Game.Screens.Play
         {
             base.LoadComplete();
             automaticDownload.Current.BindValueChanged(_ => checkForAutomaticDownload());
+            spectatorClient.OnWatchGroupChanged += updateSpectatorCount;
+
+            Scheduler.AddOnce(() =>
+            {
+                var watchGroup = spectatorClient.GetSpectators(targetUser.Id);
+
+                if (watchGroup != null)
+                    updateSpectatorCount(watchGroup);
+            });
         }
 
         protected override void OnNewPlayingUserState(int userId, SpectatorState spectatorState) => Schedule(() =>
@@ -206,6 +225,24 @@ namespace osu.Game.Screens.Play
             // Importantly, don't schedule this call, as a child screen may be present (and will cause the schedule to not be run as expected).
             this.MakeCurrent();
             resetStartState();
+        }
+
+        private void updateSpectatorCount(SpectatorWatchGroup watchGroup)
+        {
+            if (watchGroup.UserID != targetUser.Id)
+                return;
+
+            int count = watchGroup.Spectators.Count;
+
+            if (count > 0)
+            {
+                spectatorCountText.FadeIn(250f);
+                spectatorCountText.Text = count > 1
+                    ? $"{count} other players are also watching"
+                    : "One other player is also watching";
+            }
+            else
+                spectatorCountText.FadeOut(250f);
         }
 
         private void resetStartState() => Schedule(() =>
