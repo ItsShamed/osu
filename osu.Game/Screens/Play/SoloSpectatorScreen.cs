@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using osu.Framework.Allocation;
+using osu.Framework.Bindables;
 using osu.Framework.Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
@@ -19,7 +20,9 @@ using osu.Game.Graphics;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Graphics.UserInterfaceV2;
 using osu.Game.Localisation;
+using osu.Game.Online;
 using osu.Game.Online.API.Requests.Responses;
+using osu.Game.Online.Rooms;
 using osu.Game.Online.Spectator;
 using osu.Game.Overlays;
 using osu.Game.Overlays.Settings;
@@ -45,6 +48,9 @@ namespace osu.Game.Screens.Play
         [Resolved]
         private BeatmapModelDownloader beatmapDownloader { get; set; } = null!;
 
+        [Resolved]
+        private SpectatorClient spectatorClient { get; set; } = null!;
+
         [Cached]
         private OverlayColourProvider colourProvider = new OverlayColourProvider(OverlayColourScheme.Purple);
 
@@ -61,6 +67,8 @@ namespace osu.Game.Screens.Play
         private SpectatorGameplayState? immediateSpectatorGameplayState;
 
         private ScheduledDelegate? beatmapFetchCallback;
+
+        private BeatmapDownloadTracker? downloadTracker;
 
         private APIBeatmapSet? beatmapSet;
 
@@ -253,6 +261,10 @@ namespace osu.Game.Screens.Play
 
                 beatmapSet = beatmap.BeatmapSet;
                 beatmapPanelContainer.Child = new BeatmapCardNormal(beatmapSet, allowExpansion: false);
+
+                downloadTracker = new BeatmapDownloadTracker(beatmapSet);
+                AddInternal(downloadTracker);
+
                 checkForAutomaticDownload();
             }));
         }
@@ -266,9 +278,37 @@ namespace osu.Game.Screens.Play
                 return;
 
             if (beatmaps.IsAvailableLocally(new BeatmapSetInfo { OnlineID = beatmapSet.OnlineID }))
+            {
+                spectatorClient.UpdateBeatmapAvailability(targetUser.Id, BeatmapAvailability.LocallyAvailable());
                 return;
+            }
 
             beatmapDownloader.Download(beatmapSet);
+
+            downloadTracker?.State.BindValueChanged(updateDownloadState);
+            downloadTracker?.Progress.BindValueChanged(updateDownloadProgress);
+        }
+
+        private void updateDownloadState(ValueChangedEvent<DownloadState> e)
+        {
+            if (e.NewValue != DownloadState.Downloading)
+            {
+                spectatorClient.UpdateBeatmapAvailability(targetUser.Id, new BeatmapAvailability(e.NewValue));
+                return;
+            }
+
+            spectatorClient.UpdateBeatmapAvailability(targetUser.Id, BeatmapAvailability.Downloading((float)downloadTracker!.Progress.Value));
+        }
+
+        private void updateDownloadProgress(ValueChangedEvent<double> e)
+        {
+            if (e.NewValue == 1)
+            {
+                spectatorClient.UpdateBeatmapAvailability(targetUser.Id, BeatmapAvailability.Importing());
+                return;
+            }
+
+            spectatorClient.UpdateBeatmapAvailability(targetUser.Id, BeatmapAvailability.Downloading((float)e.NewValue));
         }
 
         public override bool OnExiting(ScreenExitEvent e)
