@@ -11,6 +11,7 @@ using osu.Game.Database;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Graphics.UserInterface;
+using osu.Game.Localisation;
 using osu.Game.Online;
 using osu.Game.Online.API;
 using osu.Game.Online.Rooms;
@@ -51,7 +52,7 @@ namespace osu.Game.Screens.Play.HUD
                     Anchor = Anchor.TopLeft,
                     Origin = Anchor.TopLeft,
                     Font = OsuFont.Torus.With(size: 18, weight: FontWeight.SemiBold),
-                    Text = "Spectators (0)",
+                    Text = SpectatorStrings.SpectatorListTitle(),
                 },
                 flow = new FillFlowContainer<SpectatorListItem>
                 {
@@ -139,7 +140,7 @@ namespace osu.Game.Screens.Play.HUD
                 return;
 
             flow.Add(new SpectatorListItem(user, this));
-            spectatorHeader.Text = $"Spectators ({spectatorCount})";
+            spectatorHeader.Text = SpectatorStrings.SpectatorListTitle(spectatorCount);
 
             updateVisibility();
             sorting.Invalidate();
@@ -151,7 +152,7 @@ namespace osu.Game.Screens.Play.HUD
                 return;
 
             flow.SingleOrDefault(i => i.UserID == user.UserID)?.Remove();
-            spectatorHeader.Text = $"Spectators ({spectatorCount})";
+            spectatorHeader.Text = SpectatorStrings.SpectatorListTitle(spectatorCount);
 
             updateVisibility();
             sorting.Invalidate();
@@ -169,7 +170,7 @@ namespace osu.Game.Screens.Play.HUD
             {
                 foreach (var listItem in flow)
                     listItem.Remove();
-                spectatorHeader.Text = "Spectators (0)";
+                spectatorHeader.Text = SpectatorStrings.SpectatorListTitle();
                 updateVisibility();
                 populated = false;
                 return;
@@ -182,7 +183,7 @@ namespace osu.Game.Screens.Play.HUD
 
             populated = true;
 
-            spectatorHeader.Text = $"Spectators ({watchGroup.Spectators.Count})";
+            spectatorHeader.Text = SpectatorStrings.SpectatorListTitle(watchGroup.Spectators.Count);
             sorting.Invalidate();
             updateVisibility();
         }
