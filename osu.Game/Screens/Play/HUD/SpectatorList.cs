@@ -82,6 +82,10 @@ namespace osu.Game.Screens.Play.HUD
             spectatorClient.OnUserBeganWatching += addSpectator;
             spectatorClient.OnUserStoppedWatching += removeSpectator;
             spectatorClient.OnWatchGroupChanged += _ => updateState();
+
+            flow.Clear();
+            populated = false;
+            updateState();
         }
 
         protected override void PopIn()
@@ -183,9 +187,15 @@ namespace osu.Game.Screens.Play.HUD
         private void updateVisibility()
         {
             if (spectatorClient?.GetSpectators(TrackedUserId)?.Spectators.Count > 0)
-                Show();
+            {
+                if (State.Value != Visibility.Visible)
+                    Show();
+            }
             else
-                Hide();
+            {
+                if (State.Value != Visibility.Hidden)
+                    Hide();
+            }
 
             if (!IgnoreSpectatorLimit && spectatorClient?.GetSpectators(TrackedUserId)?.Spectators.Count > max_spectators)
                 collapseList();
