@@ -121,6 +121,10 @@ namespace osu.Game.Screens.Play.HUD
 
         private void addSpectator(SpectatorUser user, int watched)
         {
+            // Let updateState populate initial users
+            if (!populated)
+                return;
+
             if (watched != TrackedUserId)
                 return;
 
@@ -167,11 +171,11 @@ namespace osu.Game.Screens.Play.HUD
             if (populated)
                 return;
 
-            foreach (var spectatorUser in watchGroup.Spectators)
-                flow.Add(new SpectatorListItem(spectatorUser, this));
+            foreach (var spectatorUser in watchGroup.Spectators) flow.Add(new SpectatorListItem(spectatorUser, this));
+
+            populated = true;
 
             spectatorHeader.Text = $"Spectators ({watchGroup.Spectators.Count})";
-            populated = true;
             sorting.Invalidate();
             updateVisibility();
         }
