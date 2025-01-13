@@ -158,10 +158,10 @@ namespace osu.Game.Tests.Visual.Gameplay
             AddAssert("flow is visible", () => getItems().IsPresent, () => Is.True);
 
             AddSpectator(31);
-            AddAssert("flow is not visible", () => getItems().IsPresent, () => Is.False);
+            AddUntilStep("flow is not visible", () => getItems().IsPresent, () => Is.False);
 
             RemoveSpectator(31);
-            AddAssert("flow is visible", () => getItems().IsPresent, () => Is.True);
+            AddUntilStep("flow is visible", () => getItems().IsPresent, () => Is.True);
 
             StopWatching();
         }
