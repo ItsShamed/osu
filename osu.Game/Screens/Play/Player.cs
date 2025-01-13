@@ -902,13 +902,7 @@ namespace osu.Game.Screens.Play
 
             if (spectatorList != null)
             {
-                LoadComponentAsync(spectatorList, list =>
-                {
-                    if (!LoadedBeatmapSuccessfully)
-                        return;
-
-                    HUDOverlay.LeaderboardFlow.Add(spectatorList);
-                });
+                LoadComponentAsync(spectatorList, HUDOverlay.LeaderboardFlow.Add);
             }
         }
 

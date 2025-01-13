@@ -82,7 +82,7 @@ namespace osu.Game.Screens.Play.HUD
 
             spectatorClient.OnUserBeganWatching += addSpectator;
             spectatorClient.OnUserStoppedWatching += removeSpectator;
-            spectatorClient.OnWatchGroupChanged += _ => updateState();
+            spectatorClient.OnWatchGroupChanged += onWatchGroupChanged;
 
             flow.Clear();
             populated = false;
@@ -108,6 +108,8 @@ namespace osu.Game.Screens.Play.HUD
         }
 
         protected virtual int TrackedUserId => state?.Score.ScoreInfo.User.Id ?? api.LocalUser.Value.Id;
+
+        private void onWatchGroupChanged(SpectatorWatchGroup _) => updateState();
 
         private void sort()
         {
@@ -211,6 +213,18 @@ namespace osu.Game.Screens.Play.HUD
 
         private void collapseList() => flow.FadeOut(100);
         private void expandList() => flow.FadeIn(100);
+
+        protected override void Dispose(bool isDisposing)
+        {
+            base.Dispose(isDisposing);
+
+            if (spectatorClient == null)
+                return;
+
+            spectatorClient.OnUserBeganWatching -= addSpectator;
+            spectatorClient.OnUserStoppedWatching -= removeSpectator;
+            spectatorClient.OnWatchGroupChanged -= onWatchGroupChanged;
+        }
 
         public partial class SpectatorListItem : CompositeDrawable
         {
@@ -387,6 +401,14 @@ namespace osu.Game.Screens.Play.HUD
                     spinner.Hide();
 
                 userState.Validate();
+            }
+
+            protected override void Dispose(bool isDisposing)
+            {
+                base.Dispose(isDisposing);
+
+                if (spectatorClient != null)
+                    spectatorClient.OnUserChangedState -= onUserChangedState;
             }
         }
     }
