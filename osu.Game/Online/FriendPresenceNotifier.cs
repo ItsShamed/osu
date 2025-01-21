@@ -8,8 +8,10 @@ using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Sprites;
+using osu.Framework.Localisation;
 using osu.Game.Configuration;
 using osu.Game.Graphics;
+using osu.Game.Localisation;
 using osu.Game.Online.API;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Online.Chat;
@@ -36,9 +38,6 @@ namespace osu.Game.Online
 
         [Resolved]
         private ChatOverlay chatOverlay { get; set; } = null!;
-
-        [Resolved]
-        private OsuColour colours { get; set; } = null!;
 
         [Resolved]
         private OsuConfigManager config { get; set; } = null!;
@@ -167,11 +166,8 @@ namespace osu.Game.Online
 
             APIUser? singleUser = onlineAlertQueue.Count == 1 ? onlineAlertQueue.Single() : null;
 
-            notifications.Post(new SimpleNotification
+            notifications.Post(new FriendPresenceNotification(false, offlineAlertQueue.Select(u => u.Username))
             {
-                Icon = FontAwesome.Solid.UserPlus,
-                Text = $"Online: {string.Join(@", ", onlineAlertQueue.Select(u => u.Username))}",
-                IconColour = colours.Green,
                 Activated = () =>
                 {
                     if (singleUser != null)
@@ -202,15 +198,41 @@ namespace osu.Game.Online
                 return;
             }
 
-            notifications.Post(new SimpleNotification
-            {
-                Icon = FontAwesome.Solid.UserMinus,
-                Text = $"Offline: {string.Join(@", ", offlineAlertQueue.Select(u => u.Username))}",
-                IconColour = colours.Red
-            });
+            notifications.Post(new FriendPresenceNotification(false, offlineAlertQueue.Select(u => u.Username)));
 
             offlineAlertQueue.Clear();
             lastOfflineAlertTime = null;
         }
+    }
+
+    public partial class FriendPresenceNotification : SimpleNotification
+    {
+        public sealed override bool IsImportant => false;
+        public sealed override string PopInSampleName => "";
+        public sealed override string PopOutSampleName => "";
+
+        private readonly bool isOnline;
+        private readonly IEnumerable<string> usernames;
+
+        public FriendPresenceNotification(bool isOnline, IEnumerable<string> usernames)
+        {
+            this.isOnline = isOnline;
+            this.usernames = usernames;
+        }
+
+        [BackgroundDependencyLoader]
+        private void load(OsuColour colours)
+        {
+            if (!usernames.Any())
+                return;
+
+            Icon = isOnline ? FontAwesome.Solid.UserPlus : FontAwesome.Solid.UserMinus;
+            IconColour = isOnline ? colours.Green : colours.Red;
+            Text = getText();
+        }
+
+        private LocalisableString getText() => isOnline
+            ? NotificationsStrings.FriendsOnline(usernames)
+            : NotificationsStrings.FriendsOffline(usernames);
     }
 }
