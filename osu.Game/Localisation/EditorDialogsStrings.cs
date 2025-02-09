@@ -64,6 +64,11 @@ namespace osu.Game.Localisation
         /// </summary>
         public static LocalisableString LetsGo => new TranslatableString(getKey(@"lets_go"), @"Sounds good, let's go!");
 
+        /// <summary>
+        /// "All Bookmarks"
+        /// </summary>
+        public static LocalisableString AllBookmarks => new TranslatableString(getKey(@"all_bookmarks"), @"All Bookmarks");
+
         private static string getKey(string key) => $@"{prefix}:{key}";
     }
 }
