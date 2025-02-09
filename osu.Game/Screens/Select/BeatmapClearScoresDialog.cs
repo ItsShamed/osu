@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using osu.Framework.Allocation;
 using osu.Game.Beatmaps;
+using osu.Game.Localisation;
 using osu.Game.Overlays.Dialog;
 using osu.Game.Scoring;
 
@@ -17,7 +18,7 @@ namespace osu.Game.Screens.Select
 
         public BeatmapClearScoresDialog(BeatmapInfo beatmapInfo, Action onCompletion)
         {
-            BodyText = $"All local scores on {beatmapInfo.GetDisplayTitle()}";
+            BodyText = SongSelectStrings.ClearAllLocalScoresDialog(beatmapInfo.GetDisplayTitle());
             DangerousAction = () =>
             {
                 Task.Run(() => scoreManager.Delete(beatmapInfo))

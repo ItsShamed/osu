@@ -54,6 +54,11 @@ namespace osu.Game.Localisation
         /// </summary>
         public static LocalisableString EditBeatmap => new TranslatableString(getKey(@"edit_beatmap"), @"Edit beatmap");
 
+        /// <summary>
+        /// "Are your sure you want to clear all local scores on {0}?"
+        /// </summary>
+        public static LocalisableString ClearAllLocalScoresDialog(string beatmapTitle) => new TranslatableString(getKey(@"clear_all_local_scores_dialog"), @"Are your sure you want to clear all local scores on {0}?", beatmapTitle);
+
         private static string getKey(string key) => $@"{prefix}:{key}";
     }
 }
