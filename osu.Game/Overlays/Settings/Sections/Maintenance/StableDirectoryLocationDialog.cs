@@ -7,6 +7,7 @@ using osu.Framework.Graphics.Sprites;
 using osu.Framework.Screens;
 using osu.Game.Overlays.Dialog;
 using osu.Game.Screens;
+using osu.Game.Localisation;
 
 namespace osu.Game.Overlays.Settings.Sections.Maintenance
 {
@@ -17,20 +18,20 @@ namespace osu.Game.Overlays.Settings.Sections.Maintenance
 
         public StableDirectoryLocationDialog(TaskCompletionSource<string> taskCompletionSource)
         {
-            HeaderText = "Failed to automatically locate an osu!stable installation.";
-            BodyText = "An existing install could not be located. If you know where it is, you can help locate it.";
+            HeaderText = StableDirectoryLocationDialogStrings.FailedToLocateStable;
+            BodyText = StableDirectoryLocationDialogStrings.FailedToLocateStableDescription;
             Icon = FontAwesome.Solid.QuestionCircle;
 
             Buttons = new PopupDialogButton[]
             {
                 new PopupDialogOkButton
                 {
-                    Text = "Sure! I know where it is located!",
+                    Text = StableDirectoryLocationDialogStrings.OkLocate,
                     Action = () => Schedule(() => performer.PerformFromScreen(screen => screen.Push(new StableDirectorySelectScreen(taskCompletionSource))))
                 },
                 new PopupDialogCancelButton
                 {
-                    Text = "Actually I don't have osu!stable installed.",
+                    Text = StableDirectoryLocationDialogStrings.CancelNotInstalled,
                     Action = () => taskCompletionSource.TrySetCanceled()
                 }
             };
