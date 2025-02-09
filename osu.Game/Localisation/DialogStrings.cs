@@ -29,6 +29,11 @@ namespace osu.Game.Localisation
         /// </summary>
         public static LocalisableString Cancel => new TranslatableString(getKey(@"cancel"), @"No! Abort mission");
 
+        /// <summary>
+        /// "Last chance to turn back"
+        /// </summary>
+        public static LocalisableString LastChance => new TranslatableString(getKey(@"last_chance"), @"Last chance to turn back");
+
         private static string getKey(string key) => $@"{prefix}:{key}";
     }
 }

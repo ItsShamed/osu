@@ -47,7 +47,7 @@ namespace osu.Game.Screens.Menu
                 if (ongoingOperations.Length > 10)
                     text += $"\n{localisation.GetLocalisedString(ConfirmExitDialogStrings.RemainingOperations(ongoingOperations.Length - 10))}\n";
 
-                text += $"\n{localisation.GetLocalisedString(ConfirmExitDialogStrings.LastChance)}";
+                text += $"\n{localisation.GetLocalisedString(DialogStrings.LastChance)}";
 
                 BodyText = text;
 
@@ -67,7 +67,7 @@ namespace osu.Game.Screens.Menu
             }
             else
             {
-                BodyText = ConfirmExitDialogStrings.LastChance;
+                BodyText = DialogStrings.LastChance;
 
                 Buttons = new PopupDialogButton[]
                 {

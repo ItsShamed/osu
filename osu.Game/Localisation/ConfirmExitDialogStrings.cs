@@ -25,11 +25,6 @@ namespace osu.Game.Localisation
         public static LocalisableString RemainingOperations(int count) => new TranslatableString(getKey(@"remaining_operations"), @"and {0} other operation(s).", count);
 
         /// <summary>
-        /// "Last chance to turn back"
-        /// </summary>
-        public static LocalisableString LastChance => new TranslatableString(getKey(@"last_chance"), @"Last chance to turn back");
-
-        /// <summary>
         /// "Let me out!"
         /// </summary>
         public static LocalisableString ConfirmExit => new TranslatableString(getKey(@"confirm_exit"), @"Let me out!");
