@@ -12,6 +12,7 @@ using osu.Game.Extensions;
 using osu.Game.Models;
 using osu.Game.Overlays.Notifications;
 using Realms;
+using osu.Game.Localisation;
 
 namespace osu.Game.Database
 {
@@ -108,15 +109,15 @@ namespace osu.Game.Database
             if (items.Count == 0)
             {
                 if (!silent)
-                    PostNotification?.Invoke(new ProgressCompletionNotification { Text = $"No {HumanisedModelName}s found to delete!" });
+                    PostNotification?.Invoke(new ProgressCompletionNotification { Text = ModelManagerStrings.NoModelToDelete(HumanisedModelName) });
                 return;
             }
 
             var notification = new ProgressNotification
             {
                 Progress = 0,
-                Text = $"Preparing to delete all {HumanisedModelName}s...",
-                CompletionText = $"Deleted all {HumanisedModelName}s!",
+                Text = ModelManagerStrings.PreparingToDelete(HumanisedModelName),
+                CompletionText = ModelManagerStrings.AllModelsDeleted(HumanisedModelName),
                 State = ProgressNotificationState.Active,
             };
 
@@ -131,7 +132,7 @@ namespace osu.Game.Database
                     // user requested abort
                     return;
 
-                notification.Text = $"Deleting {HumanisedModelName}s ({++i} of {items.Count})";
+                notification.Text = ModelManagerStrings.DeletionProgress(HumanisedModelName, ++i, items.Count);
 
                 Delete(b);
 
@@ -156,7 +157,7 @@ namespace osu.Game.Database
 
             var notification = new ProgressNotification
             {
-                CompletionText = "Restored all deleted items!",
+                CompletionText = ModelManagerStrings.RestoredAllDeletedItems,
                 Progress = 0,
                 State = ProgressNotificationState.Active,
             };
@@ -172,7 +173,7 @@ namespace osu.Game.Database
                     // user requested abort
                     return;
 
-                notification.Text = $"Restoring ({++i} of {items.Count})";
+                notification.Text = ModelManagerStrings.RestorationProgress(++i, items.Count);
 
                 Undelete(item);
 
