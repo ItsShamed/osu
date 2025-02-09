@@ -24,6 +24,11 @@ namespace osu.Game.Localisation
         /// </summary>
         public static LocalisableString InviteFailedUserOptOut => new TranslatableString(getKey(@"cant_invite_this_user_as1"), @"Can't invite this user as they have opted out of non-friend communications.");
 
+        /// <summary>
+        /// "Are you sure you want to close the following playlist:"
+        /// </summary>
+        public static LocalisableString ClosePlaylistDialog => new TranslatableString(getKey(@"close_playlist_dialog"), @"Are you sure you want to close the following playlist:");
+
         private static string getKey(string key) => $@"{prefix}:{key}";
     }
 }
