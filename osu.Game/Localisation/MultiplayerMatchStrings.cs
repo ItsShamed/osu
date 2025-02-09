@@ -39,6 +39,11 @@ namespace osu.Game.Localisation
         /// </summary>
         public static LocalisableString FreestyleButtonTooltip => new TranslatableString(getKey(@"freestyle_button_tooltip"), @"Each player can choose their preferred difficulty, ruleset and mods.");
 
+        /// <summary>
+        /// "Are you sure you want to abort the match?"
+        /// </summary>
+        public static LocalisableString AbortMatchDialog => new TranslatableString(getKey(@"abort_match_dialog"), @"Are you sure you want to abort the match?");
+
         private static string getKey(string key) => $@"{prefix}:{key}";
     }
 }
