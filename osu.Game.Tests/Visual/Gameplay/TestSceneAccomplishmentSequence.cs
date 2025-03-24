@@ -51,6 +51,7 @@ namespace osu.Game.Tests.Visual.Gameplay
             populateBeatmap(new[] { new HitObject(), new HitObject() });
             issueResult(HitResult.Perfect);
             issueResult(HitResult.Great);
+            AddAssert("sequence is alive", () => sequence.IsAlive);
         }
 
         [Test]
@@ -60,6 +61,7 @@ namespace osu.Game.Tests.Visual.Gameplay
             issueResult(HitResult.Perfect);
             issueResult(HitResult.Great);
             issueResult(HitResult.Good);
+            AddAssert("sequence is alive", () => sequence.IsAlive);
         }
 
         [Test]
@@ -70,6 +72,7 @@ namespace osu.Game.Tests.Visual.Gameplay
             issueResult(HitResult.Great);
             issueResult(HitResult.IgnoreMiss);
             issueResult(HitResult.Good);
+            AddAssert("sequence is alive", () => sequence.IsAlive);
         }
 
         [Test]
@@ -81,6 +84,7 @@ namespace osu.Game.Tests.Visual.Gameplay
             issueResult(HitResult.IgnoreMiss);
             issueResult(HitResult.Good);
             issueResult(HitResult.Miss);
+            AddAssert("sequence expired", () => !sequence.IsAlive);
         }
 
         [Test]
@@ -92,6 +96,7 @@ namespace osu.Game.Tests.Visual.Gameplay
             issueResult(HitResult.IgnoreMiss);
             issueResult(HitResult.Good);
             issueResult(HitResult.LargeTickMiss);
+            AddAssert("sequence expired", () => !sequence.IsAlive);
         }
 
         private void populateBeatmap(HitObject[] objects) => AddStep($"create beatmap with {objects.Length} objects", () =>
