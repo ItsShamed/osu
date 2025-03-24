@@ -136,6 +136,7 @@ namespace osu.Game.Screens.Play
                 PlayfieldSkinLayer = drawableRuleset != null
                     ? new SkinnableContainer(new GlobalSkinnableContainerLookup(GlobalSkinnableContainers.Playfield, drawableRuleset.Ruleset.RulesetInfo)) { AlwaysPresent = true, }
                     : Empty(),
+                new DefaultAccomplishmentSequence(),
                 TopRightElements = new FillFlowContainer
                 {
                     Anchor = Anchor.TopRight,
