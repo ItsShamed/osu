@@ -23,32 +23,40 @@ namespace osu.Game.Screens.Play
         private readonly OsuSpriteText text;
         private readonly TrianglePieceV2 triangles;
         private readonly Circle glow;
+        private readonly Box flash;
 
         public DefaultAccomplishmentSequence()
         {
             RelativeSizeAxes = Axes.Both;
             Anchor = Anchor.Centre;
             Origin = Anchor.Centre;
-            Size = new Vector2(1, 0.2f);
             InternalChildren = new Drawable[]
             {
+                flash = new Box
+                {
+                    Alpha = 0,
+                    RelativeSizeAxes = Axes.Both,
+                    Anchor = Anchor.Centre,
+                    Origin = Anchor.Centre,
+                    Blending = BlendingParameters.Additive,
+                },
                 glow = new Circle
                 {
                     Blending = BlendingParameters.Additive,
                     Anchor = Anchor.Centre,
                     Origin = Anchor.Centre,
                     Alpha = 0,
-                    Size = new Vector2(300, 10),
+                    Size = new Vector2(512, 16),
                     Position = new Vector2(0, 5)
                 },
                 triangles = new TrianglePieceV2(triangles_seed)
                 {
                     Alpha = 0f,
                     RelativeSizeAxes = Axes.Both,
-                    Size = new Vector2(0.7f, 1),
+                    Size = new Vector2(0.7f, 0.2f),
                     Anchor = Anchor.Centre,
                     Origin = Anchor.Centre,
-                    SpawnRatio = 1.5f,
+                    SpawnRatio = 1.75f,
                     Velocity = 3f,
                     Position = new Vector2(-30, 10)
                 },
@@ -71,6 +79,9 @@ namespace osu.Game.Screens.Play
 
             text.FadeIn().FlashColour(Color4.White, 500).TransformSpacingTo(new Vector2(1f), 1000, Easing.OutQuart).ScaleTo(new Vector2(1.2f), 1000);
             glow.FadeIn().Then().FadeOut(500);
+
+            if (accomplishment != Accomplishment.NoBreak)
+                flash.FadeTo(accomplishment == Accomplishment.FullCombo ? 0.05f : 0.25f).Then().FadeOut(750, Easing.OutQuad);
 
             triangles.Reset();
 
@@ -110,8 +121,8 @@ namespace osu.Game.Screens.Play
             glow.EdgeEffect = new EdgeEffectParameters
             {
                 Type = EdgeEffectType.Glow,
-                Colour = triangleColour.Opacity(0.2f),
-                Radius = 400f,
+                Colour = triangleColour.Opacity(0.25f),
+                Radius = 750f,
             };
             triangles.Colour = ColourInfo.GradientVertical(triangleColour.Lighten(0.5f), triangleColour.Darken(0.05f));
         }
