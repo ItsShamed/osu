@@ -34,7 +34,8 @@ namespace osu.Game.Screens.Play
             // we count 300s (or greats) as being "perfect"
             int nonPerfectHits = scoreProcessor.Statistics.GetValueOrDefault(HitResult.Miss, 0)
                                  + scoreProcessor.Statistics.GetValueOrDefault(HitResult.Meh, 0)
-                                 + scoreProcessor.Statistics.GetValueOrDefault(HitResult.Good, 0);
+                                 + scoreProcessor.Statistics.GetValueOrDefault(HitResult.Good, 0)
+                                 + scoreProcessor.Statistics.GetValueOrDefault(HitResult.Ok, 0);
 
             if (nonPerfectHits == 0)
             {
